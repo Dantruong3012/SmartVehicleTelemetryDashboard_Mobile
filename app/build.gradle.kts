@@ -2,16 +2,17 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.hilt)
 }
 
 android {
     namespace = "com.dantruong.smartvehicletelemetrydashboard_mobile"
-    compileSdk = 37
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.dantruong.smartvehicletelemetrydashboard_mobile"
         minSdk = 28
-        targetSdk = 37
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -20,10 +21,7 @@ android {
 
     buildTypes {
         release {
-            optimization {
-                enable = false
-
-            }
+            isMinifyEnabled = false
         }
     }
     compileOptions {
@@ -60,6 +58,7 @@ dependencies {
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
     implementation(libs.kotlinx.coroutines.android)
     ksp(libs.androidx.room.compiler)
     testImplementation(libs.junit)
