@@ -1,104 +1,128 @@
-# HVAC Telemetry Architecture
+# Smart Vehicle Telemetry Dashboard — Mobile
 
-## Overview
-This document outlines the architecture and data flow of the HVAC (Heating, Ventilation, and Air Conditioning) background service. The system utilizes a Bi-directional Inter-Process Communication (IPC) model via Android AIDL to ensure smooth, non-blocking communication between the User Interface and the simulated vehicle engine running in a separate background thread.
+A Jetpack Compose Android application simulating a real-time vehicle telemetry dashboard. The app demonstrates bidirectional IPC via Android AIDL, a Foreground Service architecture, Room Database persistence, and Clean Architecture principles.
 
-## Architecture Data Flow
+---
+
+## Branch Structure
+
+| Branch | Description |
+|---|---|
+| `main` | Stable base project |
+| `feature/hvac-engine-service` | MVP — HVAC control + Telemetry UI, each subsystem manages its own AIDL connection independently |
+| `feature/ssot-architecture` | Refactored — `TelemetryService` acts as the Single Source of Truth (SSOT), centralizing all AIDL connections |
+
+---
+
+## Architecture Overview
+
+### MVP Architecture (`feature/hvac-engine-service`)
+
+Each subsystem (HVAC, Telemetry) manages its own Service binding independently.
+
+```
+HvacViewModel         TelemetryViewModel
+     |                       |
+HvacRepositoryImpl    TelemetryRepositoryImpl
+     |                       |
+  (AIDL)               (LocalBinder)
+     |                       |
+HvacEngineService     TelemetryService
+                        (Speed/Battery Simulator)
+```
+
+### SSOT Architecture (`feature/ssot-architecture`)
+
+`TelemetryService` is the central hub that owns all hardware connections. Repositories communicate with it via `LocalBinder`.
+
+```
+HvacViewModel         TelemetryViewModel
+     |                       |
+HvacRepositoryImpl    TelemetryRepositoryImpl
+     |    (LocalBinder)      |    (LocalBinder)
+     +----------+------------+
+                |
+        TelemetryService   <-- Single Source of Truth (Foreground Service)
+         |           |
+      (AIDL)   Speed/Battery
+         |       Simulator
+   HvacEngineService
+    (MockHvacEngine)
+```
+
+---
+
+## Data Flow (SSOT Branch)
 
 ```mermaid
 sequenceDiagram
     participant UI as Jetpack Compose (UI)
+    participant VM as HvacViewModel
     participant Repo as HvacRepositoryImpl
-    participant Service as HvacEngineService (AIDL)
-    participant Handler as hvacHandlerThread
-    participant Engine as MockHvacEngine
+    participant SSOT as TelemetryService (SSOT)
+    participant Engine as HvacEngineService / MockHvacEngine
 
-    %% Client to Server Flow
-    Note over UI, Engine: Command Flow (Client -> Server)
-    UI->>Repo: toggleHvac(true) / setTargetTemperature(25)
-    Repo->>Service: ICanbusInterface.setTargetTemperature(25)
-    Service->>Engine: engine.turnOn() / engine.setTargetTemp(25)
+    Note over UI, Engine: Command Flow (UI -> Engine)
+    UI->>VM: increaseTemp()
+    VM->>Repo: setTemperature(26)
+    Repo->>SSOT: setTargetTemperature(26)
+    SSOT->>Engine: ICanbusInterface.setTargetTemperature(26)
 
-    %% Server to Client Flow
-    Note over Engine, UI: Event Flow (Server -> Client)
+    Note over Engine, UI: Event Flow (Engine -> UI)
     loop Every 1 second
-        Engine-->>Service: HvacEngineListener.onUpdateTemp(temp)
-        Note right of Engine: Engine runs on its own Thread
-        Service-->>Handler: hvacHandler.sendMessage(msg)
-        Note right of Service: Message queued to avoid blocking the Engine
-        Handler-->>Repo: ICanbusCallBack.onTemperatureChanged(temp)
-        Note left of Handler: Handler processes the IPC call
-        Repo-->>UI: StateFlow updates _currentTemp.value
+        Engine-->>SSOT: ICanbusCallBack.onTemperatureChanged(26)
+        SSOT-->>Repo: HvacStateListener.onTemperatureChanged(26)
+        Repo-->>Repo: temperatureDao.insertTemp(26)
+        Repo-->>UI: StateFlow<Int> _currentTemp updated
     end
 ```
 
+---
+
 ## Component Responsibilities
 
-1. Client Layer (App Process)
-- HvacScreen (Compose): Observes StateFlow and renders UI.
-- HvacViewModel: Manages the lifecycle. Binds to the service on initialization and unbinds on clearance.
-- HvacRepositoryImpl: Acts as the central hub. It initiates the `bindService` call, holds the `ICanbusInterface` to send commands, and provides the `ICanbusCallBack` to receive updates.
+### Presentation Layer
+- **`HvacScreen`**: Compose UI — observes `StateFlow`, renders HVAC controls. Prevents temp adjustment when HVAC is off.
+- **`HvacViewModel`**: Bridges UI actions to `HvacRepository`. Guards min/max temperature (`HvacConfig`).
+- **`TelemetryScreen`**: Displays real-time Speed and Battery with smooth `animateFloatAsState` animations.
+- **`DashboardScreen`**: Root screen composing all widgets. Includes a Power Off button to cleanly shut down all services.
 
-2. IPC Layer (AIDL)
-- ICanbusInterface: The primary communication channel from the Repository to the Service.
-- ICanbusCallBack: The reverse communication channel passed to the Service, allowing it to send real-time data back to the Repository.
+### Data Layer
+- **`HvacRepositoryImpl`** *(SSOT branch)*: Binds to `TelemetryService` via `LocalBinder`. Delegates all HVAC commands to the service. Receives state updates via `HvacStateListener`. Persists temperature to Room DB on every change.
+- **`TelemetryRepositoryImpl`**: Binds to `TelemetryService` via `LocalBinder`. Receives Speed/Battery updates via `TelemetryListener`.
+- **`TemperatureDao`**: Room DAO for persisting and restoring temperature across app restarts.
 
-3. Server Layer (Service Process)
-- HvacEngineService: The Android Service that implements the AIDL stub. It holds the reference to the Client's callback.
-- hvacHandlerThread: A dedicated background thread equipped with a Looper. It handles outgoing IPC calls to prevent the Engine loop from being blocked by potential network or process delays.
-- MockHvacEngine: A simulated engine running an infinite loop on a raw Java Thread. It calculates temperature changes strictly every second.
+### Service Layer
+- **`TelemetryService`** *(SSOT branch)*: Foreground Service acting as the SSOT hub. Manages the AIDL connection to `HvacEngineService`, runs the Speed/Battery simulator, and exposes `LocalBinder` + Listener interfaces for repositories.
+- **`HvacEngineService`**: AIDL Server implementing `ICanbusInterface`. Delegates to `MockHvacEngine` running on a `HandlerThread` to prevent blocking.
+- **`MockHvacEngine`**: Pure Java simulation engine. Runs an infinite loop, gradually adjusting temperature toward the target value every second.
 
-## The Threading Model (Anti-Blocking Strategy)
+### IPC Layer (AIDL)
+- **`ICanbusInterface.aidl`**: Client-to-Server commands (`setHvacEnabled`, `setTargetTemperature`, `registerCallBack`).
+- **`ICanbusCallBack.aidl`**: Server-to-Client events (`onTemperatureChanged`, `onTurnHvacEngine`).
 
-The architecture deliberately separates the calculation thread from the communication thread. 
-If the `MockHvacEngine` directly triggered the `ICanbusCallBack` to the Client, any delay in the IPC transaction would block the Engine's loop, causing inaccurate timing (e.g., updating every 1.5 seconds instead of 1.0 second). 
-To solve this, the Engine delegates the IPC call to a `Handler` running on `hvacHandlerThread`. This allows the Engine to immediately return to its calculation loop while the Handler waits for the IPC transaction to complete.
+---
 
-## Sample Implementation
+## Database Persistence Strategy
 
-### 1. Client Binding and Callback Setup
-```kotlin
-// Inside HvacRepositoryImpl.kt
-private val callback = object : ICanbusCallBack.Stub() {
-    override fun onTemperatureChanged(temp: Int) {
-        _currentTemp.value = temp
-    }
-}
+Temperature is persisted with a 3-layer anti-data-loss strategy:
 
-private val serviceConnection = object : ServiceConnection {
-    override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-        hvacService = ICanbusInterface.Stub.asInterface(service)
-        // Pass the callback to the service
-        hvacService?.registerCallBack(callback)
-    }
-}
-```
+| Trigger | Action |
+|---|---|
+| `onTemperatureChanged` callback | Save to DB immediately on every engine update |
+| `onHvacStateChanged(false)` callback | Snapshot to DB when HVAC turns off |
+| `unbindService()` | Final snapshot to DB before app exits |
+| App restart (`onServiceConnected`) | Read last saved temp from DB and restore to engine |
 
-### 2. Service Handler Delegation
-```java
-// Inside HvacEngineService.java
-hvacHandler = new Handler(hvacHandlerThread.getLooper(), msg -> {
-    if (msg.what == MSG_TEMP_UPDATE) {
-        int temp = msg.arg1;
-        if (clientCallback != null) {
-            try {
-                // IPC call is executed on the Handler Thread, not the Engine Thread
-                clientCallback.onTemperatureChanged(temp);
-            } catch (RemoteException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-    return true;
-});
+---
 
-// Engine simply drops a message into the Handler's queue
-mockHvacEngine.setHvacEngineListener(new HvacEngineListener() {
-    @Override
-    public void onUpdateTemp(int temp) {
-        Message msg = hvacHandler.obtainMessage(MSG_TEMP_UPDATE);
-        msg.arg1 = temp;
-        hvacHandler.sendMessage(msg);
-    }
-});
-```
+## Tech Stack
+
+- **Language**: Kotlin + Java (AIDL Services)
+- **UI**: Jetpack Compose + Material 3
+- **Architecture**: Clean Architecture (Presentation → Domain → Data)
+- **DI**: Hilt
+- **Async**: Kotlin Coroutines + StateFlow
+- **Database**: Room (local persistence)
+- **IPC**: Android AIDL (bidirectional)
+- **Background**: Foreground Service with Ongoing Notification

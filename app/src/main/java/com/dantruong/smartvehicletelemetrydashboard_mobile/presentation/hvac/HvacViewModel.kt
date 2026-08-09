@@ -2,6 +2,7 @@ package com.dantruong.smartvehicletelemetrydashboard_mobile.presentation.hvac
 
 import androidx.lifecycle.ViewModel
 import com.dantruong.smartvehicletelemetrydashboard_mobile.data.repository.HvacRepository
+import com.dantruong.smartvehicletelemetrydashboard_mobile.domain.engine.HvacConfig
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
@@ -28,13 +29,13 @@ class HvacViewModel @Inject constructor(
 
     fun increaseTemp() {
         if (!isHvacOn.value) return
-        val newTemp = (currentTemp.value + 1).coerceAtMost(com.dantruong.smartvehicletelemetrydashboard_mobile.domain.engine.HvacConfig.MAX_TEMPERATURE)
+        val newTemp = (currentTemp.value + 1).coerceAtMost(HvacConfig.MAX_TEMPERATURE)
         hvacRepository.setTemperature(newTemp)
     }
 
     fun decreaseTemp() {
         if (!isHvacOn.value) return
-        val newTemp = (currentTemp.value - 1).coerceAtLeast(com.dantruong.smartvehicletelemetrydashboard_mobile.domain.engine.HvacConfig.MIN_TEMPERATURE)
+        val newTemp = (currentTemp.value - 1).coerceAtLeast(HvacConfig.MIN_TEMPERATURE)
         hvacRepository.setTemperature(newTemp)
     }
 
