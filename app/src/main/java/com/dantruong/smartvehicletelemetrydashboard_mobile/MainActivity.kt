@@ -5,8 +5,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import com.dantruong.smartvehicletelemetrydashboard_mobile.presentation.dashboard.DashboardScreen
 import com.dantruong.smartvehicletelemetrydashboard_mobile.ui.theme.SmartVehicleTelemetryDashboard_MobileTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -17,8 +18,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             SmartVehicleTelemetryDashboard_MobileTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-
+                Surface(modifier = Modifier.fillMaxSize()) {
+                    DashboardScreen()
                 }
             }
         }

@@ -4,11 +4,22 @@ public class MockHvacEngine {
     private HvacEngineListener hvacEngineListener;
     private boolean isHvacOn = false;
     private Thread hvacThread;
-    private int currentTemp = 25;
-    private int targetTemp = 25;
+    private int currentTemp;
+    private int targetTemp;
+
+    public MockHvacEngine(int initialTemp) {
+        this.currentTemp = initialTemp;
+        this.targetTemp = initialTemp;
+    }
 
     public void setTargetTemp(int targetTemp) {
         this.targetTemp = targetTemp;
+        if (!isHvacOn) {
+            this.currentTemp = targetTemp;
+            if (hvacEngineListener != null) {
+                hvacEngineListener.onUpdateTemp(this.currentTemp);
+            }
+        }
     }
 
     public void setHvacEngineListener(HvacEngineListener hvacEngineListener) {

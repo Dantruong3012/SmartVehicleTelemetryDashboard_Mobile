@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 
 import com.dantruong.smartvehicletelemetrydashboard_mobile.ICanbusCallBack;
 import com.dantruong.smartvehicletelemetrydashboard_mobile.ICanbusInterface;
+import com.dantruong.smartvehicletelemetrydashboard_mobile.domain.engine.HvacConfig;
 import com.dantruong.smartvehicletelemetrydashboard_mobile.domain.engine.HvacEngineListener;
 import com.dantruong.smartvehicletelemetrydashboard_mobile.domain.engine.MockHvacEngine;
 
@@ -51,7 +52,7 @@ public class HvacEngineService extends Service {
             if (mockHvacEngine != null){
                 return mockHvacEngine.getCurrentTemp();
             }
-            return 25;
+            return HvacConfig.DEFAULT_TEMPERATURE;
         }
 
         @Override
@@ -94,7 +95,7 @@ public class HvacEngineService extends Service {
             return false;
         });
 
-        mockHvacEngine = new MockHvacEngine();
+        mockHvacEngine = new MockHvacEngine(HvacConfig.DEFAULT_TEMPERATURE);
         mockHvacEngine.setHvacEngineListener(new HvacEngineListener() {
             @Override
             public void onUpdateTemp(int temp) {
@@ -115,7 +116,6 @@ public class HvacEngineService extends Service {
                 }
             }
         });
-        mockHvacEngine.turnOn();
     }
 
     @Nullable
