@@ -34,6 +34,16 @@
             android:name=".framework.services.HvacEngineService"
             android:exported="false" />
 
+        <!-- Đăng ký Service Giám sát Telemetry (Foreground) -->
+        <service
+            android:name=".framework.services.TelemetryService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="vehicle_telemetry" />
+        </service>
+
     </application>
 
 </manifest>

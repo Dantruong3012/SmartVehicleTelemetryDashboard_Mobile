@@ -11,3 +11,4 @@ interface HvacRepository {
     fun startAndBindService()
     fun unbindService()
 }
+

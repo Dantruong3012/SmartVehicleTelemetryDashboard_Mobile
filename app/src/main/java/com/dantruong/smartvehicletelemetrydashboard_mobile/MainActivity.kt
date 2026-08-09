@@ -7,6 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import com.dantruong.smartvehicletelemetrydashboard_mobile.framework.services.TelemetryService
 import com.dantruong.smartvehicletelemetrydashboard_mobile.presentation.dashboard.DashboardScreen
 import com.dantruong.smartvehicletelemetrydashboard_mobile.ui.theme.SmartVehicleTelemetryDashboard_MobileTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -19,7 +20,13 @@ class MainActivity : ComponentActivity() {
         setContent {
             SmartVehicleTelemetryDashboard_MobileTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    DashboardScreen()
+                    DashboardScreen(
+                        onExitApp = {
+                            // TelemetryService tự dọn dẹp HvacEngineService trong onDestroy()
+                            stopService(android.content.Intent(this@MainActivity, TelemetryService::class.java))
+                            finishAndRemoveTask()
+                        }
+                    )
                 }
             }
         }
