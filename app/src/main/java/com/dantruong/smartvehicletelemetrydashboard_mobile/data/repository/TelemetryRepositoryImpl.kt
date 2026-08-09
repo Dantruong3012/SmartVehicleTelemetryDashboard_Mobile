@@ -50,4 +50,9 @@ class TelemetryRepositoryImpl @Inject constructor(
         context.unbindService(connection)
         telemetryService = null
     }
+
+    override fun stopService() {
+        val intent = Intent(context, TelemetryService::class.java)
+        context.stopService(intent)
+    }
 }

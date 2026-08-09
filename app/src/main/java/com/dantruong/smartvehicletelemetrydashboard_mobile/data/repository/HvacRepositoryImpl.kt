@@ -108,4 +108,9 @@ constructor(
         context.unbindService(serviceConnection)
         hvacService = null
     }
+
+    override fun stopService() {
+        val intent = Intent(context, HvacEngineService::class.java)
+        context.stopService(intent)
+    }
 }

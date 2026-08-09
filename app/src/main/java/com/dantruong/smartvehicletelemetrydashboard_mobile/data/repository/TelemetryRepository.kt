@@ -7,4 +7,5 @@ interface TelemetryRepository {
     val telemetryData: StateFlow<TelemetryData>
     fun startAndBindService()
     fun unbindService()
+    fun stopService()
 }

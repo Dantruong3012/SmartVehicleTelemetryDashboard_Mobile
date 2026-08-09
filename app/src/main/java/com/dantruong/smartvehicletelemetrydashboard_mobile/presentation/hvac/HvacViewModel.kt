@@ -27,12 +27,14 @@ class HvacViewModel @Inject constructor(
     }
 
     fun increaseTemp() {
-        val newTemp = (currentTemp.value + 1).coerceAtMost(32)
+        if (!isHvacOn.value) return
+        val newTemp = (currentTemp.value + 1).coerceAtMost(com.dantruong.smartvehicletelemetrydashboard_mobile.domain.engine.HvacConfig.MAX_TEMPERATURE)
         hvacRepository.setTemperature(newTemp)
     }
 
     fun decreaseTemp() {
-        val newTemp = (currentTemp.value - 1).coerceAtLeast(16)
+        if (!isHvacOn.value) return
+        val newTemp = (currentTemp.value - 1).coerceAtLeast(com.dantruong.smartvehicletelemetrydashboard_mobile.domain.engine.HvacConfig.MIN_TEMPERATURE)
         hvacRepository.setTemperature(newTemp)
     }
 

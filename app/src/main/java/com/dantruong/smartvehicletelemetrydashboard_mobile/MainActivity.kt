@@ -19,7 +19,13 @@ class MainActivity : ComponentActivity() {
         setContent {
             SmartVehicleTelemetryDashboard_MobileTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    DashboardScreen()
+                    DashboardScreen(
+                        onExitApp = {
+                            stopService(android.content.Intent(this@MainActivity, com.dantruong.smartvehicletelemetrydashboard_mobile.framework.services.HvacEngineService::class.java))
+                            stopService(android.content.Intent(this@MainActivity, com.dantruong.smartvehicletelemetrydashboard_mobile.framework.services.TelemetryService::class.java))
+                            finishAndRemoveTask()
+                        }
+                    )
                 }
             }
         }

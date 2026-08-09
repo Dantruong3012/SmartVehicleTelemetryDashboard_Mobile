@@ -10,4 +10,5 @@ interface HvacRepository {
     fun setTemperature(temp: Int)
     fun startAndBindService()
     fun unbindService()
+    fun stopService()
 }
