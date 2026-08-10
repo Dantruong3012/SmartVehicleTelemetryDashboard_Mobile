@@ -24,6 +24,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
 fun DoorScreen(
+    modifier: Modifier = Modifier,
     viewModel: DoorViewModel = hiltViewModel()
 ) {
     val doorStates by viewModel.doorStates.collectAsState()
@@ -39,7 +40,7 @@ fun DoorScreen(
     }
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(24.dp))
             .background(Color(0xFF1A1C23))

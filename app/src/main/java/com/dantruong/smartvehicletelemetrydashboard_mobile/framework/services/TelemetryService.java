@@ -184,23 +184,20 @@ public class TelemetryService extends Service {
             while (isRunning) {
                 try {
                     if (isEmergencyBraking) {
-                        if (speed > 0) speed -= 10;
-                        if (speed < 0) speed = 0;
-                    } else {
-                        if (isAccelerating) speed += 2; else speed -= 1;
-                        if (speed >= 120) isAccelerating = false;
-                        if (speed <= 0) isAccelerating = true;
-                    }
-                    boolean hasBattery = battery > 0;
-
-                    if (hasBattery) {
-                        if (isAccelerating) speed += 2; else speed -= 1;
-                        if (speed >= MAX_SIMULATED_SPEED) isAccelerating = false;
-                        if (speed <= 0) isAccelerating = true;
-                        if (speed % 5 == 0) battery = Math.max(0, battery - 1);
-                    } else {
+                        speed = 0;
                         isAccelerating = false;
-                        speed = Math.max(0, speed - 3);
+                    } else {
+                        boolean hasBattery = battery > 0;
+
+                        if (hasBattery) {
+                            if (isAccelerating) speed += 2; else speed -= 1;
+                            if (speed >= MAX_SIMULATED_SPEED) isAccelerating = false;
+                            if (speed <= 0) isAccelerating = true;
+                            if (speed % 5 == 0) battery = Math.max(0, battery - 1);
+                        } else {
+                            isAccelerating = false;
+                            speed = Math.max(0, speed - 3);
+                        }
                     }
 
                     if (speed > 85) {

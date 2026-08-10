@@ -12,7 +12,9 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.PowerSettingsNew
 import androidx.compose.material3.Icon
@@ -27,6 +29,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+import com.dantruong.smartvehicletelemetrydashboard_mobile.presentation.door.DoorScreen
 import com.dantruong.smartvehicletelemetrydashboard_mobile.presentation.hvac.HvacScreen
 import com.dantruong.smartvehicletelemetrydashboard_mobile.presentation.telemetry.TelemetryScreen
 import com.dantruong.smartvehicletelemetrydashboard_mobile.presentation.weather.WeatherWidget
@@ -45,6 +48,7 @@ fun DashboardScreen(
             .background(Color(0xFF0F1014))
             .statusBarsPadding()
             .navigationBarsPadding()
+            .verticalScroll(rememberScrollState())
             .padding(horizontal = 16.dp, vertical = 10.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
@@ -60,17 +64,14 @@ fun DashboardScreen(
         )
 
         // HVAC Widget
-        HvacScreen()
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Door Control Widget
-        com.dantruong.smartvehicletelemetrydashboard_mobile.presentation.door.DoorScreen()
         HvacScreen(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f)
+                .height(260.dp)
         )
+
+        // Door Control Widget
+        DoorScreen(modifier = Modifier.fillMaxWidth())
     }
 }
 
