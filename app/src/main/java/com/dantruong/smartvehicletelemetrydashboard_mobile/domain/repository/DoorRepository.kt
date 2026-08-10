@@ -8,5 +8,5 @@ interface DoorRepository {
     fun isDoorOpen(doorId: Int): Boolean
     fun registerListener(listener: DoorStateListener)
     fun unregisterListener(listener: DoorStateListener)
-    fun shutdown()
+    fun unbindService()
 }

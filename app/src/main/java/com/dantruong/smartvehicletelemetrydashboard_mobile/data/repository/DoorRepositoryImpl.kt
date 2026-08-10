@@ -17,40 +17,41 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class DoorRepositoryImpl @Inject constructor(
-    @param:ApplicationContext private val context: Context
-) : DoorRepository {
+class DoorRepositoryImpl @Inject constructor(@ApplicationContext private val context: Context) :
+        DoorRepository {
 
     private var doorService: IDoorControlInterface? = null
     private var isBound = false
     private val listeners = CopyOnWriteArrayList<DoorStateListener>()
 
-    private val doorCallback = object : IDoorControlCallback.Stub() {
-        override fun onDoorStateChanged(doorId: Int, isOpen: Boolean) {
-            listeners.forEach { it.onDoorStateChanged(doorId, isOpen) }
-        }
+    private val doorCallback =
+            object : IDoorControlCallback.Stub() {
+                override fun onDoorStateChanged(doorId: Int, isOpen: Boolean) {
+                    listeners.forEach { it.onDoorStateChanged(doorId, isOpen) }
+                }
 
-        override fun onDoorError(doorId: Int, errorCode: Int) {
-            Log.e("DoorRepository", "Door Error: $doorId - code: $errorCode")
-        }
-    }
-
-    private val serviceConnection = object : ServiceConnection {
-        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-            doorService = IDoorControlInterface.Stub.asInterface(service)
-            isBound = true
-            try {
-                doorService?.registerCallback(doorCallback)
-            } catch (e: Exception) {
-                e.printStackTrace()
+                override fun onDoorError(doorId: Int, errorCode: Int) {
+                    Log.e("DoorRepository", "Door Error: $doorId - code: $errorCode")
+                }
             }
-        }
 
-        override fun onServiceDisconnected(name: ComponentName?) {
-            doorService = null
-            isBound = false
-        }
-    }
+    private val serviceConnection =
+            object : ServiceConnection {
+                override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+                    doorService = IDoorControlInterface.Stub.asInterface(service)
+                    isBound = true
+                    try {
+                        doorService?.registerCallback(doorCallback)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+
+                override fun onServiceDisconnected(name: ComponentName?) {
+                    doorService = null
+                    isBound = false
+                }
+            }
 
     init {
         val intent = Intent(context, DoorControlService::class.java)
@@ -91,7 +92,7 @@ class DoorRepositoryImpl @Inject constructor(
         listeners.remove(listener)
     }
 
-    override fun shutdown() {
+    override fun unbindService() {
         listeners.clear()
         try {
             doorService?.unregisterCallback(doorCallback)
@@ -99,14 +100,9 @@ class DoorRepositoryImpl @Inject constructor(
             e.printStackTrace()
         }
         if (isBound) {
-            try {
-                context.unbindService(serviceConnection)
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+            context.unbindService(serviceConnection)
             isBound = false
         }
         doorService = null
-        context.stopService(Intent(context, DoorControlService::class.java))
     }
 }

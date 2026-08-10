@@ -12,16 +12,20 @@ import com.dantruong.smartvehicletelemetrydashboard_mobile.framework.services.Te
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
-class AppShutdownRepositoryImpl @Inject constructor(
-    @param:ApplicationContext private val context: Context,
-    private val telemetryRepository: TelemetryRepository,
-    private val hvacRepository: HvacRepository,
-    private val doorRepository: DoorRepository
+class AppShutdownRepositoryImpl
+@Inject
+constructor(
+        @param:ApplicationContext private val context: Context,
+        private val telemetryRepository: TelemetryRepository,
+        private val hvacRepository: HvacRepository,
+        private val doorRepository: DoorRepository
 ) : AppShutdownRepository {
     override fun shutdownServices() {
+        hvacRepository.turnOffHvac()
+        
         telemetryRepository.unbindService()
         hvacRepository.unbindService()
-        doorRepository.shutdown()
+        doorRepository.unbindService()
 
         context.stopService(Intent(context, DoorControlService::class.java))
         context.stopService(Intent(context, HvacEngineService::class.java))

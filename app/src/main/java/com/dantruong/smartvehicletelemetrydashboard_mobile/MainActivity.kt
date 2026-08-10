@@ -10,6 +10,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
+import com.dantruong.smartvehicletelemetrydashboard_mobile.domain.repository.DoorRepository
+
 import com.dantruong.smartvehicletelemetrydashboard_mobile.presentation.main.MainUiEvent
 import com.dantruong.smartvehicletelemetrydashboard_mobile.presentation.main.MainViewModel
 import com.dantruong.smartvehicletelemetrydashboard_mobile.navigation.AppNavHost
@@ -22,6 +24,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.enableEdgeToEdge
 import androidx.core.app.ActivityCompat
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -56,6 +59,7 @@ class MainActivity : ComponentActivity() {
                             }
                         }
                     }
+
 
                     AppNavHost(onExitApp = mainViewModel::onPowerButtonClicked)
                 }
