@@ -1,8 +1,8 @@
 package com.dantruong.smartvehicletelemetrydashboard_mobile.presentation.hvac
 
 import androidx.lifecycle.ViewModel
-import com.dantruong.smartvehicletelemetrydashboard_mobile.data.repository.HvacRepository
 import com.dantruong.smartvehicletelemetrydashboard_mobile.domain.engine.HvacConfig
+import com.dantruong.smartvehicletelemetrydashboard_mobile.domain.repository.HvacRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
@@ -14,8 +14,11 @@ class HvacViewModel @Inject constructor(
 
     val currentTemp: StateFlow<Int> = hvacRepository.currentTemp
     val isHvacOn: StateFlow<Boolean> = hvacRepository.isHvacOn
+    private var serviceStarted = false
 
-    init {
+    fun startHvacService() {
+        if (serviceStarted) return
+        serviceStarted = true
         hvacRepository.startAndBindService()
     }
 
@@ -41,6 +44,8 @@ class HvacViewModel @Inject constructor(
 
     override fun onCleared() {
         super.onCleared()
-        hvacRepository.unbindService()
+        if (serviceStarted) {
+            hvacRepository.unbindService()
+        }
     }
 }

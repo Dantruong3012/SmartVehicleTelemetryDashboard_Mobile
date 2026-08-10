@@ -7,6 +7,7 @@ import android.content.ServiceConnection
 import android.os.IBinder
 import com.dantruong.smartvehicletelemetrydashboard_mobile.domain.engine.TelemetryListener
 import com.dantruong.smartvehicletelemetrydashboard_mobile.domain.model.TelemetryData
+import com.dantruong.smartvehicletelemetrydashboard_mobile.domain.repository.TelemetryRepository
 import com.dantruong.smartvehicletelemetrydashboard_mobile.framework.services.TelemetryService
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,7 +18,7 @@ import javax.inject.Singleton
 
 @Singleton
 class TelemetryRepositoryImpl @Inject constructor(
-    @ApplicationContext private val context: Context
+    @param:ApplicationContext private val context: Context
 ) : TelemetryRepository {
     private var telemetryService: TelemetryService? = null
     private val _telemetryData = MutableStateFlow(TelemetryData(0, 100))

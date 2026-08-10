@@ -1,9 +1,8 @@
 package com.dantruong.smartvehicletelemetrydashboard_mobile.presentation.telemetry
 
 import androidx.lifecycle.ViewModel
-import com.dantruong.smartvehicletelemetrydashboard_mobile.data.repository.TelemetryRepository
+import com.dantruong.smartvehicletelemetrydashboard_mobile.domain.repository.TelemetryRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
 
 @HiltViewModel
@@ -12,13 +11,18 @@ class TelemetryViewModel @Inject constructor(
 ) : ViewModel() {
 
     val telemetryData = telemetryRepository.telemetryData
+    private var serviceStarted = false
 
-    init {
+    fun startTelemetryService() {
+        if (serviceStarted) return
+        serviceStarted = true
         telemetryRepository.startAndBindService()
     }
 
     override fun onCleared() {
         super.onCleared()
-        telemetryRepository.unbindService()
+        if (serviceStarted) {
+            telemetryRepository.unbindService()
+        }
     }
 }
