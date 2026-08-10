@@ -30,6 +30,7 @@ import com.dantruong.smartvehicletelemetrydashboard_mobile.domain.model.WeatherD
 
 @Composable
 fun WeatherWidget(
+    onOpenForecast: (() -> Unit)? = null,
     viewModel: WeatherViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -47,7 +48,13 @@ fun WeatherWidget(
             .clip(RoundedCornerShape(24.dp))
             .background(Color(0xFF1E2026).copy(alpha = 0.5f))
             .border(1.dp, Color(0xFF00B4D8).copy(alpha = 0.3f), RoundedCornerShape(24.dp))
-            .clickable { viewModel.fetchWeather(isManualTap = true) }
+            .clickable {
+                if (onOpenForecast != null) {
+                    onOpenForecast()
+                } else {
+                    viewModel.fetchWeather(isManualTap = true)
+                }
+            }
             .padding(20.dp)
     ) {
         Crossfade(targetState = uiState, label = "WeatherStateAnimation") { state ->
