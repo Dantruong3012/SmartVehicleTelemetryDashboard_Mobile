@@ -184,15 +184,20 @@ public class TelemetryService extends Service {
             while (isRunning) {
                 try {
                     if (isEmergencyBraking) {
-                        speed = 0;
+                        if (speed > 0) speed -= 5;
+                        if (speed < 0) speed = 0;
                         isAccelerating = false;
                     } else {
                         boolean hasBattery = battery > 0;
 
                         if (hasBattery) {
+                            if (speed <= 0) {
+                                speed = 0;
+                                isAccelerating = true;
+                            }
                             if (isAccelerating) speed += 2; else speed -= 1;
                             if (speed >= MAX_SIMULATED_SPEED) isAccelerating = false;
-                            if (speed <= 0) isAccelerating = true;
+                            if (speed <= 0) { speed = 0; isAccelerating = true; }
                             if (speed % 5 == 0) battery = Math.max(0, battery - 1);
                         } else {
                             isAccelerating = false;
@@ -237,6 +242,11 @@ public class TelemetryService extends Service {
 
 
     @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        return START_NOT_STICKY;
+    }
+
+    @Override
     public void onCreate() {
         super.onCreate();
         startForeground(2, createNotification());
@@ -250,6 +260,7 @@ public class TelemetryService extends Service {
         isRunning = false;
         if (simulatorThread != null) simulatorThread.interrupt();
         unbindFromHvacEngine();
+        stopForeground(true);
     }
 
     private void persistTripLog(TelemetryData data) {

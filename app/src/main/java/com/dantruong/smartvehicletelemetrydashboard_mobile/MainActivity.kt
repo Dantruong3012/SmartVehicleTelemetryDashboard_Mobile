@@ -12,6 +12,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
+import com.dantruong.smartvehicletelemetrydashboard_mobile.data.repository.DoorRepository
+import com.dantruong.smartvehicletelemetrydashboard_mobile.domain.repository.HvacRepository
+import com.dantruong.smartvehicletelemetrydashboard_mobile.domain.repository.TelemetryRepository
+import com.dantruong.smartvehicletelemetrydashboard_mobile.framework.services.DoorControlService
+import com.dantruong.smartvehicletelemetrydashboard_mobile.framework.services.HvacEngineService
 import com.dantruong.smartvehicletelemetrydashboard_mobile.framework.services.TelemetryService
 import com.dantruong.smartvehicletelemetrydashboard_mobile.presentation.dashboard.DashboardScreen
 import com.dantruong.smartvehicletelemetrydashboard_mobile.presentation.weatherforecast.WeatherForecastScreen
@@ -24,9 +29,15 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.enableEdgeToEdge
 import androidx.core.app.ActivityCompat
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject lateinit var telemetryRepository: TelemetryRepository
+    @Inject lateinit var hvacRepository: HvacRepository
+    @Inject lateinit var doorRepository: DoorRepository
+
     private enum class AppScreen {
         Dashboard,
         WeatherForecast
@@ -57,10 +68,15 @@ class MainActivity : ComponentActivity() {
                         AppScreen.Dashboard -> {
                             DashboardScreen(
                                 onExitApp = {
-                                    // TelemetryService tự dọn dẹp HvacEngineService trong onDestroy()
+                                    // Unbind all repositories first
+                                    telemetryRepository.unbindService()
+                                    hvacRepository.unbindService()
+                                    doorRepository.unbindService()
+
                                     stopService(android.content.Intent(this@MainActivity, TelemetryService::class.java))
+                                    stopService(android.content.Intent(this@MainActivity, HvacEngineService::class.java))
+                                    stopService(android.content.Intent(this@MainActivity, DoorControlService::class.java))
                                     finishAndRemoveTask()
-                                    finishAffinity()
                                 },
                                 onOpenWeatherForecast = {
                                     currentScreen = AppScreen.WeatherForecast

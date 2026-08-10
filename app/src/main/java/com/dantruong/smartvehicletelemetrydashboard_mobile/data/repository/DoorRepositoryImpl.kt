@@ -89,4 +89,17 @@ class DoorRepositoryImpl @Inject constructor(
     override fun unregisterListener(listener: DoorStateListener) {
         listeners.remove(listener)
     }
+
+    override fun unbindService() {
+        if (isBound) {
+            try {
+                doorService?.unregisterCallback(doorCallback)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+            context.unbindService(serviceConnection)
+            isBound = false
+        }
+        doorService = null
+    }
 }
