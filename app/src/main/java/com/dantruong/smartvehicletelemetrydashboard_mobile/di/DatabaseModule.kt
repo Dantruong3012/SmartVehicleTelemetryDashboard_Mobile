@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.dantruong.smartvehicletelemetrydashboard_mobile.data.local.AppDatabase
 import com.dantruong.smartvehicletelemetrydashboard_mobile.data.local.dao.TemperatureDao
+import com.dantruong.smartvehicletelemetrydashboard_mobile.data.local.dao.WeatherDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -31,5 +32,10 @@ object DatabaseModule {
     @Provides
     fun provideTemperatureDao(database: AppDatabase): TemperatureDao{
         return database.temperatureDao()
+    }
+
+    @Provides
+    fun provideWeatherDao(database: AppDatabase): com.dantruong.smartvehicletelemetrydashboard_mobile.data.local.dao.WeatherDao {
+        return database.weatherDao()
     }
 }

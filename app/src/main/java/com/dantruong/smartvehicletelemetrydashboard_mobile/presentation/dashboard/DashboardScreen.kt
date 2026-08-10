@@ -13,8 +13,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dantruong.smartvehicletelemetrydashboard_mobile.presentation.hvac.HvacScreen
-
 import com.dantruong.smartvehicletelemetrydashboard_mobile.presentation.telemetry.TelemetryScreen
+import com.dantruong.smartvehicletelemetrydashboard_mobile.presentation.weather.WeatherWidget
+
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 
 @Composable
 fun DashboardScreen(onExitApp: () -> Unit = {}) {
@@ -22,6 +25,7 @@ fun DashboardScreen(onExitApp: () -> Unit = {}) {
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFF0F1014)) // Dark sleek background
+            .verticalScroll(rememberScrollState())
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -62,7 +66,12 @@ fun DashboardScreen(onExitApp: () -> Unit = {}) {
             }
         }
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Weather Widget
+        WeatherWidget()
+
+        Spacer(modifier = Modifier.height(16.dp))
 
         // Telemetry Widget
         TelemetryScreen()
@@ -71,7 +80,5 @@ fun DashboardScreen(onExitApp: () -> Unit = {}) {
 
         // HVAC Widget
         HvacScreen()
-
-        // Future Widgets can be placed here (e.g. Media, GPS)
     }
 }
