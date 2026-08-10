@@ -24,4 +24,10 @@ abstract class RepositoryModule {
     abstract fun bindTelemetryRepository(
         telemetryRepositoryImpl: TelemetryRepositoryImpl
     ): TelemetryRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindWeatherRepository(
+        weatherRepositoryImpl: com.dantruong.smartvehicletelemetrydashboard_mobile.data.repository.WeatherRepositoryImpl
+    ): com.dantruong.smartvehicletelemetrydashboard_mobile.data.repository.WeatherRepository
 }

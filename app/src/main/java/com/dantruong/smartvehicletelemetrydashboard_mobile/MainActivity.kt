@@ -14,10 +14,22 @@ import com.dantruong.smartvehicletelemetrydashboard_mobile.ui.theme.DashboardBac
 import com.dantruong.smartvehicletelemetrydashboard_mobile.ui.theme.SmartVehicleTelemetryDashboard_MobileTheme
 import dagger.hilt.android.AndroidEntryPoint
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.core.app.ActivityCompat
+
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), 101)
+            }
+        }
         val dashboardBackgroundArgb = DashboardBackground.toArgb()
         window.setBackgroundDrawable(ColorDrawable(dashboardBackgroundArgb))
         window.statusBarColor = dashboardBackgroundArgb

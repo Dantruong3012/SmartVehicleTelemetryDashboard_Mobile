@@ -6,14 +6,17 @@ import androidx.room.TypeConverters
 import com.dantruong.smartvehicletelemetrydashboard_mobile.data.converter.AppConverter
 import com.dantruong.smartvehicletelemetrydashboard_mobile.data.local.dao.AlertLogDao
 import com.dantruong.smartvehicletelemetrydashboard_mobile.data.local.dao.TemperatureDao
+import com.dantruong.smartvehicletelemetrydashboard_mobile.data.local.dao.WeatherDao
+import com.dantruong.smartvehicletelemetrydashboard_mobile.data.local.entity.Temperature
+import com.dantruong.smartvehicletelemetrydashboard_mobile.data.local.entity.WeatherEntity
 import com.dantruong.smartvehicletelemetrydashboard_mobile.data.local.dao.TripLogDao
 import com.dantruong.smartvehicletelemetrydashboard_mobile.data.local.entity.AlertLog
-import com.dantruong.smartvehicletelemetrydashboard_mobile.data.local.entity.Temperature
 import com.dantruong.smartvehicletelemetrydashboard_mobile.data.local.entity.TripLog
 
 @Database(
     entities = [
         Temperature::class,
+        WeatherEntity::class
         TripLog::class,
         AlertLog::class
     ],
@@ -24,6 +27,8 @@ import com.dantruong.smartvehicletelemetrydashboard_mobile.data.local.entity.Tri
 @TypeConverters(AppConverter::class)
 abstract class AppDatabase: RoomDatabase() {
     abstract fun temperatureDao(): TemperatureDao
+    abstract fun weatherDao(): WeatherDao
+}
     abstract fun tripLogDao(): TripLogDao
     abstract fun alertLogDao(): AlertLogDao
 }

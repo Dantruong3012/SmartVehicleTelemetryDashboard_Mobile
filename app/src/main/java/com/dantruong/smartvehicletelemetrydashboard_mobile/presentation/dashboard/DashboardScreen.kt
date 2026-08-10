@@ -2,17 +2,19 @@ package com.dantruong.smartvehicletelemetrydashboard_mobile.presentation.dashboa
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.PowerSettingsNew
 import androidx.compose.material3.Icon
@@ -22,55 +24,67 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+
 import com.dantruong.smartvehicletelemetrydashboard_mobile.presentation.hvac.HvacScreen
 import com.dantruong.smartvehicletelemetrydashboard_mobile.presentation.telemetry.TelemetryScreen
+import com.dantruong.smartvehicletelemetrydashboard_mobile.presentation.weather.WeatherWidget
 import com.dantruong.smartvehicletelemetrydashboard_mobile.ui.theme.AccentBlue
 import com.dantruong.smartvehicletelemetrydashboard_mobile.ui.theme.DangerRed
-import com.dantruong.smartvehicletelemetrydashboard_mobile.ui.theme.DashboardBackground
 import com.dantruong.smartvehicletelemetrydashboard_mobile.ui.theme.PrimaryText
 
 @Composable
-fun DashboardScreen(onExitApp: () -> Unit = {}) {
-    Box(
+fun DashboardScreen(
+    onExitApp: () -> Unit = {}
+) {
+    Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(DashboardBackground)
+            .background(Color(0xFF0F1014))
+            .statusBarsPadding()
+            .navigationBarsPadding()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .statusBarsPadding()
-                .navigationBarsPadding()
-                .padding(horizontal = 16.dp, vertical = 10.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            Header(onExitApp = onExitApp)
-            TelemetryScreen(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(0.9f, fill = true)
-            )
-            HvacScreen(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1.25f, fill = true)
-            )
-        }
+        // Header
+        Header(onExitApp = onExitApp)
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Weather Widget
+        WeatherWidget()
+
+        // Telemetry Widget
+        TelemetryScreen(
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        // HVAC Widget
+        HvacScreen(
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 }
 
 @Composable
-private fun Header(onExitApp: () -> Unit) {
+private fun Header(
+    onExitApp: () -> Unit
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
+        // Spacer để cân bằng với nút Power bên phải
         Spacer(modifier = Modifier.size(42.dp))
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             Text(
                 text = "SMART VEHICLE",
                 color = PrimaryText,
@@ -78,6 +92,7 @@ private fun Header(onExitApp: () -> Unit) {
                 fontWeight = FontWeight.Black,
                 letterSpacing = 4.sp
             )
+
             Text(
                 text = "TELEMETRY DASHBOARD",
                 color = AccentBlue,
@@ -86,12 +101,16 @@ private fun Header(onExitApp: () -> Unit) {
                 letterSpacing = 2.sp
             )
         }
+
         IconButton(
             onClick = onExitApp,
             modifier = Modifier
                 .size(42.dp)
                 .clip(CircleShape)
-                .background(DangerRed.copy(alpha = 0.2f), CircleShape)
+                .background(
+                    color = DangerRed.copy(alpha = 0.2f),
+                    shape = CircleShape
+                )
         ) {
             Icon(
                 imageVector = Icons.Rounded.PowerSettingsNew,
