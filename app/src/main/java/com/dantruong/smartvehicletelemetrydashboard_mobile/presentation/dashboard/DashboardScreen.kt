@@ -1,77 +1,103 @@
 package com.dantruong.smartvehicletelemetrydashboard_mobile.presentation.dashboard
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.PowerSettingsNew
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dantruong.smartvehicletelemetrydashboard_mobile.presentation.hvac.HvacScreen
-
 import com.dantruong.smartvehicletelemetrydashboard_mobile.presentation.telemetry.TelemetryScreen
+import com.dantruong.smartvehicletelemetrydashboard_mobile.ui.theme.AccentBlue
+import com.dantruong.smartvehicletelemetrydashboard_mobile.ui.theme.DangerRed
+import com.dantruong.smartvehicletelemetrydashboard_mobile.ui.theme.DashboardBackground
+import com.dantruong.smartvehicletelemetrydashboard_mobile.ui.theme.PrimaryText
 
 @Composable
 fun DashboardScreen(onExitApp: () -> Unit = {}) {
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF0F1014)) // Dark sleek background
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .background(DashboardBackground)
     ) {
-        // App Header
-        Spacer(modifier = Modifier.height(24.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+                .navigationBarsPadding()
+                .padding(horizontal = 16.dp, vertical = 10.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    text = "SMART VEHICLE",
-                    color = Color.White,
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Black,
-                    letterSpacing = 4.sp
-                )
-                Text(
-                    text = "TELEMETRY DASHBOARD",
-                    color = Color(0xFF00B4D8),
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 2.sp
-                )
-            }
-            androidx.compose.material3.IconButton(
-                onClick = onExitApp,
+            Header(onExitApp = onExitApp)
+            TelemetryScreen(
                 modifier = Modifier
-                    .size(48.dp)
-                    .background(Color(0xFFFF3D00).copy(alpha = 0.2f), androidx.compose.foundation.shape.CircleShape)
-            ) {
-                androidx.compose.material3.Icon(
-                    imageVector = androidx.compose.material.icons.Icons.Rounded.PowerSettingsNew,
-                    contentDescription = "Power Off",
-                    tint = Color(0xFFFF3D00)
-                )
-            }
+                    .fillMaxWidth()
+                    .weight(0.9f, fill = true)
+            )
+            HvacScreen(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1.25f, fill = true)
+            )
         }
+    }
+}
 
-        Spacer(modifier = Modifier.height(32.dp))
-
-        // Telemetry Widget
-        TelemetryScreen()
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // HVAC Widget
-        HvacScreen()
-
-        // Future Widgets can be placed here (e.g. Media, GPS)
+@Composable
+private fun Header(onExitApp: () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Spacer(modifier = Modifier.size(42.dp))
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = "SMART VEHICLE",
+                color = PrimaryText,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Black,
+                letterSpacing = 4.sp
+            )
+            Text(
+                text = "TELEMETRY DASHBOARD",
+                color = AccentBlue,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 2.sp
+            )
+        }
+        IconButton(
+            onClick = onExitApp,
+            modifier = Modifier
+                .size(42.dp)
+                .clip(CircleShape)
+                .background(DangerRed.copy(alpha = 0.2f), CircleShape)
+        ) {
+            Icon(
+                imageVector = Icons.Rounded.PowerSettingsNew,
+                contentDescription = "Power Off",
+                tint = DangerRed
+            )
+        }
     }
 }

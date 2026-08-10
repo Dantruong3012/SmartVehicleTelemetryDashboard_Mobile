@@ -1,14 +1,16 @@
 package com.dantruong.smartvehicletelemetrydashboard_mobile
 
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.toArgb
 import com.dantruong.smartvehicletelemetrydashboard_mobile.framework.services.TelemetryService
 import com.dantruong.smartvehicletelemetrydashboard_mobile.presentation.dashboard.DashboardScreen
+import com.dantruong.smartvehicletelemetrydashboard_mobile.ui.theme.DashboardBackground
 import com.dantruong.smartvehicletelemetrydashboard_mobile.ui.theme.SmartVehicleTelemetryDashboard_MobileTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -16,19 +18,30 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        val dashboardBackgroundArgb = DashboardBackground.toArgb()
+        window.setBackgroundDrawable(ColorDrawable(dashboardBackgroundArgb))
+        window.statusBarColor = dashboardBackgroundArgb
+        window.navigationBarColor = dashboardBackgroundArgb
         setContent {
             SmartVehicleTelemetryDashboard_MobileTheme {
-                Surface(modifier = Modifier.fillMaxSize()) {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = DashboardBackground
+                ) {
                     DashboardScreen(
                         onExitApp = {
                             // TelemetryService tự dọn dẹp HvacEngineService trong onDestroy()
                             stopService(android.content.Intent(this@MainActivity, TelemetryService::class.java))
                             finishAndRemoveTask()
+                            finishAffinity()
                         }
+
                     )
                 }
             }
+        }
+        window.decorView.post {
+            window.decorView.invalidate()
         }
     }
 }

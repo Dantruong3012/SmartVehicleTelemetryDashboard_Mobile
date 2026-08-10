@@ -1,9 +1,9 @@
 package com.dantruong.smartvehicletelemetrydashboard_mobile.di
 
-import com.dantruong.smartvehicletelemetrydashboard_mobile.data.repository.HvacRepository
 import com.dantruong.smartvehicletelemetrydashboard_mobile.data.repository.HvacRepositoryImpl
-import com.dantruong.smartvehicletelemetrydashboard_mobile.data.repository.TelemetryRepository
 import com.dantruong.smartvehicletelemetrydashboard_mobile.data.repository.TelemetryRepositoryImpl
+import com.dantruong.smartvehicletelemetrydashboard_mobile.domain.repository.HvacRepository
+import com.dantruong.smartvehicletelemetrydashboard_mobile.domain.repository.TelemetryRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
