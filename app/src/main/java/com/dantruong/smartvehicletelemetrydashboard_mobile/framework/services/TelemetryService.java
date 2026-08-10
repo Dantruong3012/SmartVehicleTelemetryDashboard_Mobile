@@ -38,6 +38,7 @@ public class TelemetryService extends Service {
     private static final int RESTING_ENGINE_TEMPERATURE = 70;
     private static final int INITIAL_ENGINE_TEMPERATURE = 72;
     private static final int MAX_SIMULATED_SPEED = 120;
+    private static final int EMERGENCY_BRAKE_DECELERATION = 6;
 
     private final IBinder binder = new LocalBinder();
 
@@ -184,13 +185,14 @@ public class TelemetryService extends Service {
             while (isRunning) {
                 try {
                     if (isEmergencyBraking) {
-                        speed = 0;
+                        speed = Math.max(0, speed - EMERGENCY_BRAKE_DECELERATION);
                         isAccelerating = false;
                     } else {
                         boolean hasBattery = battery > 0;
 
                         if (hasBattery) {
                             if (isAccelerating) speed += 2; else speed -= 1;
+                            speed = Math.max(0, speed);
                             if (speed >= MAX_SIMULATED_SPEED) isAccelerating = false;
                             if (speed <= 0) isAccelerating = true;
                             if (speed % 5 == 0) battery = Math.max(0, battery - 1);
