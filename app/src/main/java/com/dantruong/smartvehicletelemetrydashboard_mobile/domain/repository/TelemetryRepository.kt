@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.StateFlow
 interface TelemetryRepository {
     val telemetryData: StateFlow<TelemetryData>
     fun startAndBindService()
+    fun startBatteryCharging()
     fun unbindService()
     fun stopService()
 }

@@ -19,6 +19,10 @@ class TelemetryViewModel @Inject constructor(
         telemetryRepository.startAndBindService()
     }
 
+    fun startBatteryCharging() {
+        telemetryRepository.startBatteryCharging()
+    }
+
     override fun onCleared() {
         super.onCleared()
         if (serviceStarted) {

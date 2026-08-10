@@ -39,6 +39,7 @@ public class TelemetryService extends Service {
     private static final int INITIAL_ENGINE_TEMPERATURE = 72;
     private static final int MAX_SIMULATED_SPEED = 120;
     private static final int EMERGENCY_BRAKE_DECELERATION = 6;
+    private static final int CHARGING_INTERVAL_TICKS = 2;
 
     private final IBinder binder = new LocalBinder();
 
@@ -165,9 +166,14 @@ public class TelemetryService extends Service {
     private Thread simulatorThread;
     private boolean isRunning = false;
     private volatile boolean isEmergencyBraking = false;
+    private volatile boolean isChargingBattery = false;
 
     public void setEmergencyBraking(boolean emergencyBraking) {
         this.isEmergencyBraking = emergencyBraking;
+    }
+
+    public void startBatteryCharging() {
+        this.isChargingBattery = true;
     }
 //     private volatile boolean isRunning = false;
     private boolean lowBatteryAlertSent = false;
@@ -184,7 +190,17 @@ public class TelemetryService extends Service {
             boolean isAccelerating = true;
             while (isRunning) {
                 try {
-                    if (isEmergencyBraking) {
+                    if (isChargingBattery) {
+                        speed = 0;
+                        isAccelerating = false;
+                        if (tick % CHARGING_INTERVAL_TICKS == 0) {
+                            battery = Math.min(100, battery + 1);
+                        }
+                        if (battery >= 100) {
+                            isChargingBattery = false;
+                            isAccelerating = true;
+                        }
+                    } else if (isEmergencyBraking) {
                         speed = Math.max(0, speed - EMERGENCY_BRAKE_DECELERATION);
                         isAccelerating = false;
                     } else {

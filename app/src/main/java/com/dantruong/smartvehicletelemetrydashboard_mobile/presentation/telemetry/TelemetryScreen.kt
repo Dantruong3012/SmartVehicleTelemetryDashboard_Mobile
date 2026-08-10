@@ -10,7 +10,10 @@ import androidx.compose.material.icons.rounded.DeviceThermostat
 import androidx.compose.material.icons.rounded.Sensors
 import androidx.compose.material.icons.rounded.Speed
 import androidx.compose.material.icons.rounded.WarningAmber
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -41,6 +44,46 @@ fun TelemetryScreen(
     }
 
     val telemetryData by viewModel.telemetryData.collectAsState()
+    var batteryDepletedHandled by remember { mutableStateOf(false) }
+
+    LaunchedEffect(telemetryData.batteryLevel) {
+        if (telemetryData.batteryLevel > 0) {
+            batteryDepletedHandled = false
+        }
+    }
+
+    if (telemetryData.batteryLevel == 0 && !batteryDepletedHandled) {
+        AlertDialog(
+            onDismissRequest = {
+                batteryDepletedHandled = true
+            },
+            title = {
+                Text(text = "Xe đã hết pin")
+            },
+            text = {
+                Text(text = "Bạn muốn sạc pin để tiếp tục vận hành không?")
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        batteryDepletedHandled = true
+                        viewModel.startBatteryCharging()
+                    }
+                ) {
+                    Text(text = "Charging")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        batteryDepletedHandled = true
+                    }
+                ) {
+                    Text(text = "Không sạc pin")
+                }
+            }
+        )
+    }
 
     val alertMessage = when {
         telemetryData.batteryLevel == 0 -> "Cảnh báo: Xe hết pin, động cơ đã dừng"

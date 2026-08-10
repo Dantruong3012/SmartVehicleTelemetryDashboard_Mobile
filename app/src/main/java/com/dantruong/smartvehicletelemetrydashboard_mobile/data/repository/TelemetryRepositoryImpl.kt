@@ -49,6 +49,10 @@ class TelemetryRepositoryImpl @Inject constructor(
         context.bindService(intent, connection, Context.BIND_AUTO_CREATE)
     }
 
+    override fun startBatteryCharging() {
+        telemetryService?.startBatteryCharging()
+    }
+
     override fun unbindService() {
         telemetryService?.setTelemetryListener(null)
         if (isBound) {
