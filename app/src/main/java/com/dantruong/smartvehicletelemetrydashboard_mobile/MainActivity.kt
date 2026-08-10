@@ -17,6 +17,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
+import androidx.activity.enableEdgeToEdge
 import androidx.core.app.ActivityCompat
 
 @AndroidEntryPoint

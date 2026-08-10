@@ -92,7 +92,7 @@ fun TelemetryScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f, fill = true),
+                .height(118.dp),
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -157,7 +157,7 @@ fun TelemetryWidget(
 ) {
     Column(
         modifier = modifier
-            .fillMaxSize()
+            .fillMaxHeight()
             .clip(RoundedCornerShape(18.dp))
             .background(PanelBackground.copy(alpha = 0.5f))
             .border(1.dp, color.copy(alpha = 0.3f), RoundedCornerShape(18.dp))

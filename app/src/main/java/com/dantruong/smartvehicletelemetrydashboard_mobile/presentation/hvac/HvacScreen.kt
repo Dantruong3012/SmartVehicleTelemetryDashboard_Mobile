@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -60,12 +61,12 @@ fun HvacScreen(
             .clip(RoundedCornerShape(24.dp))
             .background(if (isHvacOn) HvacActiveBackground else HvacInactiveBackground)
             .border(1.dp, PrimaryText.copy(alpha = 0.1f), RoundedCornerShape(24.dp))
-            .padding(horizontal = 20.dp, vertical = 14.dp)
+            .padding(horizontal = 18.dp, vertical = 12.dp)
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween
+            verticalArrangement = Arrangement.SpaceEvenly
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
@@ -75,7 +76,7 @@ fun HvacScreen(
                     fontWeight = FontWeight.SemiBold,
                     letterSpacing = 2.sp
                 )
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = if (isHvacOn) "AC ECU Connected" else "Đang chờ lệnh ECU",
                     color = if (isHvacOn) SuccessGreen else SecondaryText,
@@ -85,32 +86,19 @@ fun HvacScreen(
             }
 
             Box(
-                contentAlignment = Alignment.Center,
                 modifier = Modifier
-                    .fillMaxHeight(0.48f)
-                    .aspectRatio(1f)
-                    .background(glassColor, CircleShape)
-                    .border(
-                        width = 2.dp,
-                        color = if (isHvacOn) AccentBlue else SecondaryText,
-                        shape = CircleShape
-                    )
+                    .fillMaxWidth()
+                    .weight(1f),
+                contentAlignment = Alignment.Center
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = "$currentTemp°",
-                        color = PrimaryText,
-                        fontSize = 54.sp,
-                        fontWeight = FontWeight.Black
-                    )
-                    Text(
-                        text = if (isHvacOn) "SYNC" else "OFF",
-                        color = if (isHvacOn) AccentBlue else SecondaryText,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.sp
-                    )
-                }
+                TemperatureDial(
+                    currentTemp = currentTemp,
+                    isHvacOn = isHvacOn,
+                    glassColor = glassColor,
+                    modifier = Modifier
+                        .fillMaxHeight(0.86f)
+                        .aspectRatio(1f)
+                )
             }
 
             Row(
@@ -127,7 +115,7 @@ fun HvacScreen(
                     onClick = { viewModel.toggleHvac() },
                     modifier = Modifier
                         .scale(powerButtonScale)
-                        .size(76.dp)
+                        .size(66.dp)
                         .clip(CircleShape)
                         .background(
                             if (isHvacOn) activeColor.copy(alpha = 0.2f) else inactiveColor.copy(alpha = 0.2f)
@@ -143,12 +131,12 @@ fun HvacScreen(
                             imageVector = Icons.Rounded.PowerSettingsNew,
                             contentDescription = "Power",
                             tint = if (isHvacOn) activeColor else inactiveColor,
-                            modifier = Modifier.size(30.dp)
+                            modifier = Modifier.size(27.dp)
                         )
                         Text(
                             text = if (isHvacOn) "ON" else "OFF",
                             color = if (isHvacOn) activeColor else inactiveColor,
-                            fontSize = 11.sp,
+                            fontSize = 10.sp,
                             fontWeight = FontWeight.Bold
                         )
                     }
@@ -164,13 +152,49 @@ fun HvacScreen(
 }
 
 @Composable
+private fun TemperatureDial(
+    currentTemp: Int,
+    isHvacOn: Boolean,
+    glassColor: androidx.compose.ui.graphics.Color,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier
+            .clip(CircleShape)
+            .background(glassColor)
+            .border(
+                width = 2.dp,
+                color = if (isHvacOn) AccentBlue else SecondaryText,
+                shape = CircleShape
+            )
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = "$currentTemp°",
+                color = PrimaryText,
+                fontSize = 44.sp,
+                fontWeight = FontWeight.Black
+            )
+            Text(
+                text = if (isHvacOn) "SYNC" else "OFF",
+                color = if (isHvacOn) AccentBlue else SecondaryText,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 1.sp
+            )
+        }
+    }
+}
+
+@Composable
 fun TempControlButton(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: ImageVector,
     onClick: () -> Unit
 ) {
     Box(
         modifier = Modifier
-            .size(56.dp)
+            .size(48.dp)
             .clip(CircleShape)
             .background(PrimaryText.copy(alpha = 0.05f))
             .clickable { onClick() }
@@ -181,7 +205,7 @@ fun TempControlButton(
             imageVector = icon,
             contentDescription = "Control",
             tint = PrimaryText,
-            modifier = Modifier.size(28.dp)
+            modifier = Modifier.size(24.dp)
         )
     }
 }
