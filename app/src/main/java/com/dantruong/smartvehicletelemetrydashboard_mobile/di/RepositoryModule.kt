@@ -30,4 +30,10 @@ abstract class RepositoryModule {
     abstract fun bindWeatherRepository(
         weatherRepositoryImpl: com.dantruong.smartvehicletelemetrydashboard_mobile.data.repository.WeatherRepositoryImpl
     ): com.dantruong.smartvehicletelemetrydashboard_mobile.data.repository.WeatherRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindDoorRepository(
+        doorRepositoryImpl: com.dantruong.smartvehicletelemetrydashboard_mobile.data.repository.DoorRepositoryImpl
+    ): com.dantruong.smartvehicletelemetrydashboard_mobile.data.repository.DoorRepository
 }

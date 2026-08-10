@@ -132,6 +132,11 @@ public class TelemetryService extends Service {
 
     private Thread simulatorThread;
     private boolean isRunning = false;
+    private volatile boolean isEmergencyBraking = false;
+
+    public void setEmergencyBraking(boolean emergencyBraking) {
+        this.isEmergencyBraking = emergencyBraking;
+    }
 
     private void startSimulatingData() {
         if (isRunning) return;
@@ -142,9 +147,14 @@ public class TelemetryService extends Service {
             boolean isAccelerating = true;
             while (isRunning) {
                 try {
-                    if (isAccelerating) speed += 2; else speed -= 1;
-                    if (speed >= 120) isAccelerating = false;
-                    if (speed <= 0) isAccelerating = true;
+                    if (isEmergencyBraking) {
+                        if (speed > 0) speed -= 10;
+                        if (speed < 0) speed = 0;
+                    } else {
+                        if (isAccelerating) speed += 2; else speed -= 1;
+                        if (speed >= 120) isAccelerating = false;
+                        if (speed <= 0) isAccelerating = true;
+                    }
                     int finalSpeed = speed;
                     if (battery > 0 && speed % 5 == 0) battery -= 1;
                     int finalBattery = battery;

@@ -80,5 +80,10 @@ fun DashboardScreen(onExitApp: () -> Unit = {}) {
 
         // HVAC Widget
         HvacScreen()
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Door Control Widget
+        com.dantruong.smartvehicletelemetrydashboard_mobile.presentation.door.DoorScreen()
     }
 }
