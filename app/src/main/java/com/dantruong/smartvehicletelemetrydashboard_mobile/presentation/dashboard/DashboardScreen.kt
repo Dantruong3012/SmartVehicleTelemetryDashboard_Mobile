@@ -36,7 +36,8 @@ import com.dantruong.smartvehicletelemetrydashboard_mobile.ui.theme.PrimaryText
 
 @Composable
 fun DashboardScreen(
-    onExitApp: () -> Unit = {}
+    onExitApp: () -> Unit = {},
+    onOpenWeatherForecast: () -> Unit = {}
 ) {
     Column(
         modifier = Modifier
@@ -51,7 +52,7 @@ fun DashboardScreen(
         Header(onExitApp = onExitApp)
 
         // Weather Widget
-        WeatherWidget()
+        WeatherWidget(onOpenForecast = onOpenWeatherForecast)
 
         // Telemetry Widget
         TelemetryScreen(
