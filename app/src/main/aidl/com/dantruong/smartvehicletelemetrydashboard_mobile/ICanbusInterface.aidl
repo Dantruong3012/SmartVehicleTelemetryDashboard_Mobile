@@ -13,6 +13,5 @@ interface ICanbusInterface {
 
     // bật/tắt đh
    void setHvacEnabled(boolean isEnabled);
-
    boolean isHvacEnabled();
 }

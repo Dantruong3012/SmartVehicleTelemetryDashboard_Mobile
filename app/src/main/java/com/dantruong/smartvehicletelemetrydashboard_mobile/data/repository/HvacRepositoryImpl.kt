@@ -21,12 +21,6 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * HvacRepositoryImpl (SSOT Architecture):
- *
- * Không quản lý AIDL trực tiếp nữa.
- * Bind vào TelemetryService (LocalBinder) và ủy thác toàn bộ
- * lệnh điều khiển HVAC cho TelemetryService xử lý.
- *
  * Flow:
  *   ViewModel -> HvacRepositoryImpl -> TelemetryService -> (AIDL) -> HvacEngineService
  *   HvacEngineService -> (Callback) -> TelemetryService -> HvacStateListener -> HvacRepositoryImpl -> StateFlow -> UI
