@@ -1,7 +1,11 @@
 package com.dantruong.smartvehicletelemetrydashboard_mobile.di
 
+import com.dantruong.smartvehicletelemetrydashboard_mobile.data.repository.AppShutdownRepositoryImpl
+import com.dantruong.smartvehicletelemetrydashboard_mobile.data.repository.DoorRepositoryImpl
 import com.dantruong.smartvehicletelemetrydashboard_mobile.data.repository.HvacRepositoryImpl
 import com.dantruong.smartvehicletelemetrydashboard_mobile.data.repository.TelemetryRepositoryImpl
+import com.dantruong.smartvehicletelemetrydashboard_mobile.domain.repository.AppShutdownRepository
+import com.dantruong.smartvehicletelemetrydashboard_mobile.domain.repository.DoorRepository
 import com.dantruong.smartvehicletelemetrydashboard_mobile.domain.repository.HvacRepository
 import com.dantruong.smartvehicletelemetrydashboard_mobile.domain.repository.TelemetryRepository
 import dagger.Binds
@@ -27,6 +31,12 @@ abstract class RepositoryModule {
 
     @Binds
     @Singleton
+    abstract fun bindAppShutdownRepository(
+        appShutdownRepositoryImpl: AppShutdownRepositoryImpl
+    ): AppShutdownRepository
+
+    @Binds
+    @Singleton
     abstract fun bindWeatherRepository(
         weatherRepositoryImpl: com.dantruong.smartvehicletelemetrydashboard_mobile.data.repository.WeatherRepositoryImpl
     ): com.dantruong.smartvehicletelemetrydashboard_mobile.data.repository.WeatherRepository
@@ -34,6 +44,6 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindDoorRepository(
-        doorRepositoryImpl: com.dantruong.smartvehicletelemetrydashboard_mobile.data.repository.DoorRepositoryImpl
-    ): com.dantruong.smartvehicletelemetrydashboard_mobile.data.repository.DoorRepository
+        doorRepositoryImpl: DoorRepositoryImpl
+    ): DoorRepository
 }

@@ -9,6 +9,7 @@ import android.util.Log
 import com.dantruong.smartvehicletelemetrydashboard_mobile.IDoorControlCallback
 import com.dantruong.smartvehicletelemetrydashboard_mobile.IDoorControlInterface
 import com.dantruong.smartvehicletelemetrydashboard_mobile.domain.engine.DoorStateListener
+import com.dantruong.smartvehicletelemetrydashboard_mobile.domain.repository.DoorRepository
 import com.dantruong.smartvehicletelemetrydashboard_mobile.framework.services.DoorControlService
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.concurrent.CopyOnWriteArrayList
@@ -17,7 +18,7 @@ import javax.inject.Singleton
 
 @Singleton
 class DoorRepositoryImpl @Inject constructor(
-    @ApplicationContext private val context: Context
+    @param:ApplicationContext private val context: Context
 ) : DoorRepository {
 
     private var doorService: IDoorControlInterface? = null
@@ -88,5 +89,24 @@ class DoorRepositoryImpl @Inject constructor(
 
     override fun unregisterListener(listener: DoorStateListener) {
         listeners.remove(listener)
+    }
+
+    override fun shutdown() {
+        listeners.clear()
+        try {
+            doorService?.unregisterCallback(doorCallback)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        if (isBound) {
+            try {
+                context.unbindService(serviceConnection)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+            isBound = false
+        }
+        doorService = null
+        context.stopService(Intent(context, DoorControlService::class.java))
     }
 }

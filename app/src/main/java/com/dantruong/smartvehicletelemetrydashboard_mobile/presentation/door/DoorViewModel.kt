@@ -1,8 +1,8 @@
 package com.dantruong.smartvehicletelemetrydashboard_mobile.presentation.door
 
 import androidx.lifecycle.ViewModel
-import com.dantruong.smartvehicletelemetrydashboard_mobile.data.repository.DoorRepository
 import com.dantruong.smartvehicletelemetrydashboard_mobile.domain.engine.DoorStateListener
+import com.dantruong.smartvehicletelemetrydashboard_mobile.domain.repository.DoorRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
