@@ -43,6 +43,7 @@ fun TelemetryScreen(
     val telemetryData by viewModel.telemetryData.collectAsState()
 
     val alertMessage = when {
+        telemetryData.batteryLevel == 0 -> "Cảnh báo: Xe hết pin, động cơ đã dừng"
         telemetryData.batteryLevel <= 10 -> "Cảnh báo: Xe sắp hết pin"
         telemetryData.engineTemperature > 100 -> "Cảnh báo: Nhiệt độ động cơ quá cao"
         else -> "Không có cảnh báo khẩn cấp"

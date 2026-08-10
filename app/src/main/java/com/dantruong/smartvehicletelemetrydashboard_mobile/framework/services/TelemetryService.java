@@ -35,6 +35,9 @@ public class TelemetryService extends Service {
     private static final int OVERHEAT_THRESHOLD = 100;
     private static final int TELEMETRY_INTERVAL_MS = 200;
     private static final int LOG_EVERY_TICKS = 5;
+    private static final int RESTING_ENGINE_TEMPERATURE = 70;
+    private static final int INITIAL_ENGINE_TEMPERATURE = 72;
+    private static final int MAX_SIMULATED_SPEED = 120;
 
     private final IBinder binder = new LocalBinder();
 
@@ -169,22 +172,32 @@ public class TelemetryService extends Service {
         simulatorThread = new Thread(() -> {
             int speed = 0;
             int battery = 100;
-            int engineTemperature = 72;
+            int engineTemperature = INITIAL_ENGINE_TEMPERATURE;
             int tick = 0;
             boolean isAccelerating = true;
             while (isRunning) {
                 try {
-                    if (isAccelerating) speed += 2; else speed -= 1;
-                    if (speed >= 120) isAccelerating = false;
-                    if (speed <= 0) isAccelerating = true;
-                    if (battery > 0 && speed % 5 == 0) battery -= 1;
+                    boolean hasBattery = battery > 0;
+
+                    if (hasBattery) {
+                        if (isAccelerating) speed += 2; else speed -= 1;
+                        if (speed >= MAX_SIMULATED_SPEED) isAccelerating = false;
+                        if (speed <= 0) isAccelerating = true;
+                        if (speed % 5 == 0) battery = Math.max(0, battery - 1);
+                    } else {
+                        isAccelerating = false;
+                        speed = Math.max(0, speed - 3);
+                    }
 
                     if (speed > 85) {
                         engineTemperature += 2;
-                    } else if (speed < 35 && engineTemperature > 70) {
+                    } else if (speed > 0 && speed < 35 && engineTemperature > RESTING_ENGINE_TEMPERATURE) {
                         engineTemperature -= 1;
+                    } else if (speed == 0 && engineTemperature > RESTING_ENGINE_TEMPERATURE) {
+                        engineTemperature -= 2;
                     }
                     if (engineTemperature > 112) engineTemperature = 86;
+                    engineTemperature = Math.max(RESTING_ENGINE_TEMPERATURE, engineTemperature);
 
                     int finalSpeed = speed;
                     int finalBattery = battery;
