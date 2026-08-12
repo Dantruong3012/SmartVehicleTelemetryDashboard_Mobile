@@ -17,12 +17,29 @@ import androidx.core.app.NotificationCompat;
 
 import com.dantruong.smartvehicletelemetrydashboard_mobile.ICanbusCallBack;
 import com.dantruong.smartvehicletelemetrydashboard_mobile.ICanbusInterface;
+import com.dantruong.smartvehicletelemetrydashboard_mobile.data.local.AppDatabase;
+import com.dantruong.smartvehicletelemetrydashboard_mobile.data.local.entity.AlertLog;
+import com.dantruong.smartvehicletelemetrydashboard_mobile.data.local.entity.TripLog;
 import com.dantruong.smartvehicletelemetrydashboard_mobile.domain.engine.HvacStateListener;
 import com.dantruong.smartvehicletelemetrydashboard_mobile.domain.engine.TelemetryListener;
 import com.dantruong.smartvehicletelemetrydashboard_mobile.domain.model.TelemetryData;
+import com.dantruong.smartvehicletelemetrydashboard_mobile.framework.receivers.EmergencyAlertReceiver;
 
+import javax.inject.Inject;
 
+import dagger.hilt.android.AndroidEntryPoint;
+
+@AndroidEntryPoint
 public class TelemetryService extends Service {
+    private static final int LOW_BATTERY_THRESHOLD = 10;
+    private static final int OVERHEAT_THRESHOLD = 100;
+    private static final int TELEMETRY_INTERVAL_MS = 200;
+    private static final int LOG_EVERY_TICKS = 5;
+    private static final int RESTING_ENGINE_TEMPERATURE = 70;
+    private static final int INITIAL_ENGINE_TEMPERATURE = 72;
+    private static final int MAX_SIMULATED_SPEED = 120;
+    private static final int EMERGENCY_BRAKE_DECELERATION = 6;
+    private static final int CHARGING_INTERVAL_TICKS = 2;
 
     private final IBinder binder = new LocalBinder();
 
@@ -40,6 +57,8 @@ public class TelemetryService extends Service {
 
     private TelemetryListener telemetryListener;
     private HvacStateListener hvacStateListener;
+    @Inject
+    AppDatabase appDatabase;
 
     public void setTelemetryListener(TelemetryListener listener) {
         this.telemetryListener = listener;
@@ -50,6 +69,8 @@ public class TelemetryService extends Service {
     }
 
     private ICanbusInterface hvacEngineService;
+    private Boolean pendingHvacEnabled;
+    private Integer pendingTargetTemperature;
 
     private final ICanbusCallBack hvacCallback = new ICanbusCallBack.Stub() {
         @Override
@@ -73,6 +94,14 @@ public class TelemetryService extends Service {
             hvacEngineService = ICanbusInterface.Stub.asInterface(service);
             try {
                 hvacEngineService.registerCallBack(hvacCallback);
+                if (pendingTargetTemperature != null) {
+                    hvacEngineService.setTargetTemperature(pendingTargetTemperature);
+                    pendingTargetTemperature = null;
+                }
+                if (pendingHvacEnabled != null) {
+                    hvacEngineService.setHvacEnabled(pendingHvacEnabled);
+                    pendingHvacEnabled = null;
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -104,18 +133,22 @@ public class TelemetryService extends Service {
 
 
     public void setHvacEnabled(boolean enabled) {
+        pendingHvacEnabled = enabled;
         if (hvacEngineService == null) return;
         try {
             hvacEngineService.setHvacEnabled(enabled);
+            pendingHvacEnabled = null;
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     public void setTargetTemperature(int temp) {
+        pendingTargetTemperature = temp;
         if (hvacEngineService == null) return;
         try {
             hvacEngineService.setTargetTemperature(temp);
+            pendingTargetTemperature = null;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -132,6 +165,19 @@ public class TelemetryService extends Service {
 
     private Thread simulatorThread;
     private boolean isRunning = false;
+    private volatile boolean isEmergencyBraking = false;
+    private volatile boolean isChargingBattery = false;
+
+    public void setEmergencyBraking(boolean emergencyBraking) {
+        this.isEmergencyBraking = emergencyBraking;
+    }
+
+    public void startBatteryCharging() {
+        this.isChargingBattery = true;
+    }
+//     private volatile boolean isRunning = false;
+    private boolean lowBatteryAlertSent = false;
+    private boolean overheatAlertSent = false;
 
     private void startSimulatingData() {
         if (isRunning) return;
@@ -139,19 +185,70 @@ public class TelemetryService extends Service {
         simulatorThread = new Thread(() -> {
             int speed = 0;
             int battery = 100;
+            int engineTemperature = INITIAL_ENGINE_TEMPERATURE;
+            int tick = 0;
             boolean isAccelerating = true;
             while (isRunning) {
                 try {
-                    if (isAccelerating) speed += 2; else speed -= 1;
-                    if (speed >= 120) isAccelerating = false;
-                    if (speed <= 0) isAccelerating = true;
-                    int finalSpeed = speed;
-                    if (battery > 0 && speed % 5 == 0) battery -= 1;
-                    int finalBattery = battery;
-                    if (telemetryListener != null) {
-                        telemetryListener.onTelemetryUpdated(new TelemetryData(finalSpeed, finalBattery));
+                    if (isChargingBattery) {
+                        speed = 0;
+                        isAccelerating = false;
+                        if (tick % CHARGING_INTERVAL_TICKS == 0) {
+                            battery = Math.min(100, battery + 1);
+                        }
+                        if (battery >= 100) {
+                            isChargingBattery = false;
+                            isAccelerating = true;
+                        }
+                    } else if (isEmergencyBraking) {
+                        speed = Math.max(0, speed - EMERGENCY_BRAKE_DECELERATION);
+                        isAccelerating = false;
+                    } else {
+                        boolean hasBattery = battery > 0;
+
+                        if (hasBattery) {
+                            if (speed <= 0) {
+                                speed = 0;
+                                isAccelerating = true;
+                            }
+                            if (isAccelerating) speed += 2; else speed -= 1;
+                            speed = Math.max(0, speed);
+                            if (speed >= MAX_SIMULATED_SPEED) isAccelerating = false;
+                            if (speed <= 0) { speed = 0; isAccelerating = true; }
+                            if (speed % 5 == 0) battery = Math.max(0, battery - 1);
+                        } else {
+                            isAccelerating = false;
+                            speed = Math.max(0, speed - 3);
+                        }
                     }
-                    Thread.sleep(200);
+
+                    if (speed > 85) {
+                        engineTemperature += 2;
+                    } else if (speed > 0 && speed < 35 && engineTemperature > RESTING_ENGINE_TEMPERATURE) {
+                        engineTemperature -= 1;
+                    } else if (speed == 0 && engineTemperature > RESTING_ENGINE_TEMPERATURE) {
+                        engineTemperature -= 2;
+                    }
+                    if (engineTemperature > 112) engineTemperature = 86;
+                    engineTemperature = Math.max(RESTING_ENGINE_TEMPERATURE, engineTemperature);
+
+                    int finalSpeed = speed;
+                    int finalBattery = battery;
+                    int finalEngineTemperature = engineTemperature;
+                    TelemetryData telemetryData =
+                            new TelemetryData(finalSpeed, finalBattery, finalEngineTemperature);
+
+                    if (telemetryListener != null) {
+                        telemetryListener.onTelemetryUpdated(telemetryData);
+                    }
+
+                    tick++;
+                    if (tick % LOG_EVERY_TICKS == 0) {
+                        persistTripLog(telemetryData);
+                    }
+
+                    evaluateEmergencyAlerts(telemetryData);
+                    Thread.sleep(TELEMETRY_INTERVAL_MS);
                 } catch (InterruptedException e) {
                     break;
                 }
@@ -160,6 +257,11 @@ public class TelemetryService extends Service {
         simulatorThread.start();
     }
 
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        return START_NOT_STICKY;
+    }
 
     @Override
     public void onCreate() {
@@ -175,6 +277,65 @@ public class TelemetryService extends Service {
         isRunning = false;
         if (simulatorThread != null) simulatorThread.interrupt();
         unbindFromHvacEngine();
+        stopForeground(true);
+    }
+
+    private void persistTripLog(TelemetryData data) {
+        if (appDatabase == null) return;
+        appDatabase.tripLogDao().insertTripLog(new TripLog(
+                0,
+                data.speed,
+                data.batteryLevel,
+                data.engineTemperature,
+                System.currentTimeMillis()
+        ));
+    }
+
+    private void evaluateEmergencyAlerts(TelemetryData data) {
+        if (data.batteryLevel <= LOW_BATTERY_THRESHOLD && !lowBatteryAlertSent) {
+            lowBatteryAlertSent = true;
+            sendEmergencyAlert(
+                    "LOW_BATTERY",
+                    "Bíp bíp: Xe sắp hết pin (" + data.batteryLevel + "%).",
+                    data
+            );
+        }
+
+        if (data.engineTemperature > OVERHEAT_THRESHOLD && !overheatAlertSent) {
+            overheatAlertSent = true;
+            sendEmergencyAlert(
+                    "ENGINE_OVERHEAT",
+                    "Cảnh báo: Nhiệt độ động cơ quá cao (" + data.engineTemperature + "°C).",
+                    data
+            );
+        }
+
+        if (data.batteryLevel > LOW_BATTERY_THRESHOLD + 5) {
+            lowBatteryAlertSent = false;
+        }
+        if (data.engineTemperature < OVERHEAT_THRESHOLD - 10) {
+            overheatAlertSent = false;
+        }
+    }
+
+    private void sendEmergencyAlert(String type, String message, TelemetryData data) {
+        if (appDatabase != null) {
+            appDatabase.alertLogDao().insertAlertLog(new AlertLog(
+                    0,
+                    type,
+                    message,
+                    data.speed,
+                    data.batteryLevel,
+                    data.engineTemperature,
+                    System.currentTimeMillis()
+            ));
+        }
+
+        Intent alertIntent = new Intent(this, EmergencyAlertReceiver.class);
+        alertIntent.setAction(EmergencyAlertReceiver.ACTION_EMERGENCY_ALERT);
+        alertIntent.putExtra(EmergencyAlertReceiver.EXTRA_ALERT_TYPE, type);
+        alertIntent.putExtra(EmergencyAlertReceiver.EXTRA_ALERT_MESSAGE, message);
+        sendBroadcast(alertIntent);
     }
 
 
@@ -183,15 +344,15 @@ public class TelemetryService extends Service {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
                     channelId,
-                    "Monitoring background vehicle operation",
+                    "Giám sát xe nền",
                     NotificationManager.IMPORTANCE_LOW
             );
             NotificationManager manager = getSystemService(NotificationManager.class);
             if (manager != null) manager.createNotificationChannel(channel);
         }
         return new NotificationCompat.Builder(this, channelId)
-                .setContentTitle("Vehicle is in operation")
-                .setContentText("The measurement system is running in the background...")
+                .setContentTitle("Đang kết nối xe...")
+                .setContentText("Telemetry Service Running")
                 .setSmallIcon(android.R.drawable.ic_dialog_info)
                 .setOngoing(true)
                 .build();

@@ -1,14 +1,14 @@
-package com.dantruong.smartvehicletelemetrydashboard_mobile.data.repository
+package com.dantruong.smartvehicletelemetrydashboard_mobile.domain.repository
 
 import kotlinx.coroutines.flow.StateFlow
 
 interface HvacRepository {
     val currentTemp: StateFlow<Int>
     val isHvacOn: StateFlow<Boolean>
+    val isBoundState: StateFlow<Boolean>
     fun turnOnHvac()
     fun turnOffHvac()
     fun setTemperature(temp: Int)
     fun startAndBindService()
     fun unbindService()
 }
-

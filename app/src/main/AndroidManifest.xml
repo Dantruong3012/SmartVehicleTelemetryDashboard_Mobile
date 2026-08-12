@@ -2,9 +2,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
         android:name=".ApplicationContext"
@@ -29,12 +32,13 @@
             </intent-filter>
         </activity>
 
-        <!-- Đăng ký Service động cơ HVAC -->
+        <!-- Register HVAC Engine Service -->
         <service
             android:name=".framework.services.HvacEngineService"
-            android:exported="false" />
+            android:exported="false"
+            android:process=":sensor" />
 
-        <!-- Đăng ký Service Giám sát Telemetry (Foreground) -->
+        <!-- Register Telemetry Monitoring Service (Foreground) -->
         <service
             android:name=".framework.services.TelemetryService"
             android:exported="false"
@@ -43,6 +47,24 @@
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="vehicle_telemetry" />
         </service>
+
+        <service
+            android:name=".framework.services.DoorControlService"
+            android:exported="false" />
+
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+            <meta-data
+                android:name="androidx.work.WorkManagerInitializer"
+                android:value="androidx.startup"
+                tools:node="remove" />
+        </provider>
+        <receiver
+            android:name=".framework.receivers.EmergencyAlertReceiver"
+            android:exported="false" />
 
     </application>
 

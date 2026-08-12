@@ -7,6 +7,7 @@ import android.content.ServiceConnection
 import android.os.IBinder
 import com.dantruong.smartvehicletelemetrydashboard_mobile.domain.engine.TelemetryListener
 import com.dantruong.smartvehicletelemetrydashboard_mobile.domain.model.TelemetryData
+import com.dantruong.smartvehicletelemetrydashboard_mobile.domain.repository.TelemetryRepository
 import com.dantruong.smartvehicletelemetrydashboard_mobile.framework.services.TelemetryService
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,11 +18,15 @@ import javax.inject.Singleton
 
 @Singleton
 class TelemetryRepositoryImpl @Inject constructor(
-    @ApplicationContext private val context: Context
+    @param:ApplicationContext private val context: Context
 ) : TelemetryRepository {
     private var telemetryService: TelemetryService? = null
+    private var isBound = false
     private val _telemetryData = MutableStateFlow(TelemetryData(0, 100))
     override val telemetryData: StateFlow<TelemetryData> = _telemetryData.asStateFlow()
+
+    private val _isBoundState = MutableStateFlow(false)
+    override val isBoundState: StateFlow<Boolean> = _isBoundState.asStateFlow()
     private val listener = TelemetryListener { data ->
         _telemetryData.value = data
     }
@@ -30,12 +35,16 @@ class TelemetryRepositoryImpl @Inject constructor(
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             val binder = service as TelemetryService.LocalBinder
             telemetryService = binder.service
+            isBound = true
+            _isBoundState.value = true
             telemetryService?.setTelemetryListener(listener)
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
             telemetryService?.setTelemetryListener(null)
             telemetryService = null
+            isBound = false
+            _isBoundState.value = false
         }
     }
 
@@ -45,9 +54,17 @@ class TelemetryRepositoryImpl @Inject constructor(
         context.bindService(intent, connection, Context.BIND_AUTO_CREATE)
     }
 
+    override fun startBatteryCharging() {
+        telemetryService?.startBatteryCharging()
+    }
+
     override fun unbindService() {
         telemetryService?.setTelemetryListener(null)
-        context.unbindService(connection)
+        if (isBound) {
+            context.unbindService(connection)
+            isBound = false
+            _isBoundState.value = false
+        }
         telemetryService = null
     }
 

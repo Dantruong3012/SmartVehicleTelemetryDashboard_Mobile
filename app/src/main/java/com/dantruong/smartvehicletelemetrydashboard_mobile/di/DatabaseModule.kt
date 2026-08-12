@@ -3,7 +3,10 @@ package com.dantruong.smartvehicletelemetrydashboard_mobile.di
 import android.content.Context
 import androidx.room.Room
 import com.dantruong.smartvehicletelemetrydashboard_mobile.data.local.AppDatabase
+import com.dantruong.smartvehicletelemetrydashboard_mobile.data.local.dao.AlertLogDao
 import com.dantruong.smartvehicletelemetrydashboard_mobile.data.local.dao.TemperatureDao
+import com.dantruong.smartvehicletelemetrydashboard_mobile.data.local.dao.TripLogDao
+import com.dantruong.smartvehicletelemetrydashboard_mobile.data.local.dao.WeatherDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -24,12 +27,28 @@ object DatabaseModule {
             AppDatabase::class.java,
             "smart-vehicle"
         )
+            .enableMultiInstanceInvalidation()
             .fallbackToDestructiveMigration()
             .build()
     }
 
     @Provides
-    fun provideTemperatureDao(database: AppDatabase): TemperatureDao{
+    fun provideTemperatureDao(database: AppDatabase): TemperatureDao {
         return database.temperatureDao()
+    }
+
+    @Provides
+    fun provideWeatherDao(database: AppDatabase): WeatherDao {
+        return database.weatherDao()
+    }
+
+    @Provides
+    fun provideTripLogDao(database: AppDatabase): TripLogDao {
+        return database.tripLogDao()
+    }
+
+    @Provides
+    fun provideAlertLogDao(database: AppDatabase): AlertLogDao {
+        return database.alertLogDao()
     }
 }
