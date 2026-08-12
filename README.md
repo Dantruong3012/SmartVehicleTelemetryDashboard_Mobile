@@ -1,6 +1,6 @@
 # Smart Vehicle Telemetry Dashboard — Mobile
 
-A **Jetpack Compose** Android application simulating a real-time in-vehicle infotainment system. The app demonstrates bidirectional IPC via Android AIDL, a Foreground Service architecture, Room Database persistence, WorkManager background sync, and **Clean Architecture** principles across 4 independent subsystems: **Telemetry**, **HVAC**, **Door Control**, and **Weather**.
+A **Jetpack Compose** Android application simulating a real-time, luxury in-vehicle infotainment system. The app demonstrates bidirectional IPC via Android AIDL, a Foreground Service architecture, Room Database persistence, WorkManager background sync, and **Clean Architecture** principles across 4 independent subsystems: **Telemetry**, **HVAC**, **Door Control**, and **Weather**.
 
 ---
 
@@ -12,6 +12,8 @@ A **Jetpack Compose** Android application simulating a real-time in-vehicle info
 | ❄️ **HVAC Control** | Bidirectional AIDL — set target temperature, receive current temp callback |
 | 🚪 **Door Control** | Open/close 4 doors with a 5-second emergency brake delay before opening |
 | 🌤️ **Weather Sync** | Periodic background weather fetch via WorkManager, cached in Room DB |
+| ✨ **Luxury Startup** | Premium splash screen with dynamic boot sequence and seamless Android 12+ transitions |
+| 🌐 **Professional Standard** | 100% English UI and codebase, strictly following modern Android best practices |
 | 🔔 **Toast Notifications** | Real-time door open/close and weather sync alerts |
 
 ---
@@ -25,6 +27,7 @@ A **Jetpack Compose** Android application simulating a real-time in-vehicle info
 | `feature/ssot-architecture` | SSOT refactor — `TelemetryService` centralises all connections |
 | `feature/weather-sync` | Weather module — WorkManager + Room DB + OpenWeatherMap API |
 | `feature/door-control-aidl` | Door Control — AIDL + Emergency Braking + Compose UI |
+| `feat/temperature-and-dashboard` | Final integration branch — combines all subsystems, splash redesign, and localization |
 
 ---
 
@@ -32,12 +35,12 @@ A **Jetpack Compose** Android application simulating a real-time in-vehicle info
 
 The project follows **Clean Architecture** with a strict separation of 3 layers:
 
-```
+```text
 ┌─────────────────────────────────────────────┐
 │              Presentation Layer              │
 │   DashboardScreen, HvacScreen,              │
 │   TelemetryScreen, DoorScreen, WeatherWidget │
-│   ViewModel (StateFlow)                      │
+│   SplashScreen, ViewModel (StateFlow)        │
 └──────────────────┬──────────────────────────┘
                    │ depends on
 ┌──────────────────▼──────────────────────────┐
@@ -59,7 +62,7 @@ The project follows **Clean Architecture** with a strict separation of 3 layers:
 
 ## Full Project Structure
 
-```
+```text
 app/src/main/
 ├── aidl/
 │   └── com/dantruong/.../
@@ -113,6 +116,9 @@ app/src/main/
 │   │       └── DoorControlService.java # AIDL Server for Door Control
 │   │
 │   └── presentation/
+│       ├── splash/
+│       │   ├── SplashScreen.kt         # Luxury startup sequence
+│       │   └── SplashViewModel.kt
 │       ├── dashboard/DashboardScreen.kt
 │       ├── telemetry/
 │       │   ├── TelemetryScreen.kt
@@ -187,7 +193,7 @@ interface ICanbusCallBack {
 ```
 
 **3-Layer Architecture:**
-```
+```text
 MockHvacEngine (HandlerThread)
     │ HvacEngineListener (Java interface)
     ▼
@@ -237,7 +243,7 @@ interface IDoorControlCallback {
 ```
 
 **Data Flow:**
-```
+```text
 [User taps "Door 1"]
         │
 DoorViewModel.toggleDoor(1)
@@ -377,7 +383,7 @@ WorkManager.getInstance(this).enqueueUniquePeriodicWork(
 ```
 
 **Data flow:**
-```
+```text
 WorkManager (every 15 min)
     │ WeatherSyncWorker.doWork()
     ▼
