@@ -295,8 +295,8 @@ public class TelemetryService extends Service {
         if (data.batteryLevel <= LOW_BATTERY_THRESHOLD && !lowBatteryAlertSent) {
             lowBatteryAlertSent = true;
             sendEmergencyAlert(
-                    "LOW_BATTERY",
-                    "Bíp bíp: Xe sắp hết pin (" + data.batteryLevel + "%).",
+                    "Low Battery Alert",
+                    "Warning: Vehicle battery is critically low (" + data.batteryLevel + "%).",
                     data
             );
         }
@@ -304,8 +304,8 @@ public class TelemetryService extends Service {
         if (data.engineTemperature > OVERHEAT_THRESHOLD && !overheatAlertSent) {
             overheatAlertSent = true;
             sendEmergencyAlert(
-                    "ENGINE_OVERHEAT",
-                    "Cảnh báo: Nhiệt độ động cơ quá cao (" + data.engineTemperature + "°C).",
+                    "Engine Overheat Alert",
+                    "Warning: Engine temperature is too high (" + data.engineTemperature + "°C).",
                     data
             );
         }
@@ -344,14 +344,14 @@ public class TelemetryService extends Service {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
                     channelId,
-                    "Giám sát xe nền",
+                    "Background vehicle monitoring",
                     NotificationManager.IMPORTANCE_LOW
             );
             NotificationManager manager = getSystemService(NotificationManager.class);
             if (manager != null) manager.createNotificationChannel(channel);
         }
         return new NotificationCompat.Builder(this, channelId)
-                .setContentTitle("Đang kết nối xe...")
+                .setContentTitle("Connecting to vehicle...")
                 .setContentText("Telemetry Service Running")
                 .setSmallIcon(android.R.drawable.ic_dialog_info)
                 .setOngoing(true)
