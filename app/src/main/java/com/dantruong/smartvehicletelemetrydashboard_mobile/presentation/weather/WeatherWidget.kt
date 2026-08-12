@@ -159,7 +159,7 @@ private fun WeatherContent(data: WeatherData) {
                 )
                 Spacer(modifier = Modifier.width(2.dp))
                 Text(
-                    text = "Hà Nội",
+                    text = "Hanoi",
                     color = Color.Gray,
                     fontSize = 12.sp
                 )

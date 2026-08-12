@@ -44,6 +44,9 @@ class HvacRepositoryImpl @Inject constructor(
     private val _isHvacOn = MutableStateFlow(false)
     override val isHvacOn: StateFlow<Boolean> = _isHvacOn.asStateFlow()
 
+    private val _isBoundState = MutableStateFlow(false)
+    override val isBoundState: StateFlow<Boolean> = _isBoundState.asStateFlow()
+
     private val hvacStateListener = object : HvacStateListener {
         override fun onTemperatureChanged(temp: Int) {
             if (_currentTemp.value != temp) {
@@ -69,13 +72,14 @@ class HvacRepositoryImpl @Inject constructor(
             val binder = service as TelemetryService.LocalBinder
             telemetryService = binder.service
             isBound = true
+            _isBoundState.value = true
             telemetryService?.setHvacStateListener(hvacStateListener)
 
-            // Đồng bộ trạng thái ban đầu từ Engine qua TelemetryService
+            // Synchronize initial state from Engine via TelemetryService
             _isHvacOn.value = pendingHvacEnabled ?: telemetryService?.isHvacEnabled ?: false
             pendingHvacEnabled?.let { telemetryService?.setHvacEnabled(it) }
 
-            // Đọc nhiệt độ đã lưu từ DB, đẩy lại cho Engine
+            // Read saved temperature from DB and push to Engine
             CoroutineScope(Dispatchers.IO).launch {
                 val savedTemp = temperatureDao.getCurrentTemp() ?: HvacConfig.DEFAULT_TEMPERATURE
                 val targetTemp = pendingTargetTemperature ?: savedTemp
@@ -88,6 +92,7 @@ class HvacRepositoryImpl @Inject constructor(
             telemetryService?.setHvacStateListener(null)
             telemetryService = null
             isBound = false
+            _isBoundState.value = false
         }
     }
 
@@ -108,7 +113,7 @@ class HvacRepositoryImpl @Inject constructor(
         pendingTargetTemperature = temp
         _currentTemp.value = temp
         telemetryService?.setTargetTemperature(temp)
-        // Lưu DB ngay khi người dùng chỉnh — không chờ callback từ Engine
+        // Save to DB immediately when user adjusts — do not wait for Engine callback
         CoroutineScope(Dispatchers.IO).launch {
             temperatureDao.insertTemp(Temperature(currentTemp = temp))
         }
@@ -125,7 +130,7 @@ class HvacRepositoryImpl @Inject constructor(
     }
 
     override fun unbindService() {
-        // Snapshot nhiệt độ cuối vào DB trước khi thoát
+        // Snapshot final temperature to DB before unbinding
         CoroutineScope(Dispatchers.IO).launch {
             temperatureDao.insertTemp(Temperature(currentTemp = _currentTemp.value))
         }
@@ -133,6 +138,7 @@ class HvacRepositoryImpl @Inject constructor(
         if (isBound) {
             context.unbindService(serviceConnection)
             isBound = false
+            _isBoundState.value = false
         }
         telemetryService = null
     }

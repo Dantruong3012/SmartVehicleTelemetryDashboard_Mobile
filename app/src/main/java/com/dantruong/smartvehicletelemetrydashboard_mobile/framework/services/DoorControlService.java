@@ -74,7 +74,7 @@ public class DoorControlService extends Service {
     public void onCreate() {
         super.onCreate();
         
-        // khởi tạo luồng chuyển phát IPC riêng
+        // Initialize dedicated IPC dispatch thread
         ipcHandlerThread = new HandlerThread("DoorIpcHandlerThread");
         ipcHandlerThread.start();
         ipcHandler = new Handler(ipcHandlerThread.getLooper());
@@ -83,7 +83,7 @@ public class DoorControlService extends Service {
         mockDoorEngine.setListener(new DoorEngineListener() {
             @Override
             public void onDoorStateChanged(int doorId, boolean isOpen) {
-                // tác vụ bắn AIDL sang luồng IPC để không block luồng của Engine
+                // Post AIDL callback task to IPC thread so it does not block Engine thread
                 ipcHandler.post(() -> {
                     for (IDoorControlCallback callback : callbacks) {
                         try {
@@ -97,7 +97,7 @@ public class DoorControlService extends Service {
 
             @Override
             public void onEmergencyBrakeTriggered(boolean isBraking) {
-                // Giao tiếp local với TelemetryService
+                // Local communication with TelemetryService
                 if (isBound && telemetryService != null) {
                     telemetryService.setEmergencyBraking(isBraking);
                 }

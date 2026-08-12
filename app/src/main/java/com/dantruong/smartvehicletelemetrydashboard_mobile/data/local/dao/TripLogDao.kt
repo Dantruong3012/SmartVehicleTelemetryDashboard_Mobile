@@ -9,7 +9,6 @@ import com.dantruong.smartvehicletelemetrydashboard_mobile.data.local.entity.Tri
 interface TripLogDao {
     @Insert
     fun insertTripLog(tripLog: TripLog)
-
     @Query("SELECT * FROM trip_logs ORDER BY loggedAt DESC LIMIT :limit")
     suspend fun getLatestTripLogs(limit: Int): List<TripLog>
 }

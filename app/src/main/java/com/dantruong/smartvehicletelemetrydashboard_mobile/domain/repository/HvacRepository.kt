@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.StateFlow
 interface HvacRepository {
     val currentTemp: StateFlow<Int>
     val isHvacOn: StateFlow<Boolean>
+    val isBoundState: StateFlow<Boolean>
     fun turnOnHvac()
     fun turnOffHvac()
     fun setTemperature(temp: Int)

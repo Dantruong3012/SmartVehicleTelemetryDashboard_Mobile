@@ -24,6 +24,9 @@ class TelemetryRepositoryImpl @Inject constructor(
     private var isBound = false
     private val _telemetryData = MutableStateFlow(TelemetryData(0, 100))
     override val telemetryData: StateFlow<TelemetryData> = _telemetryData.asStateFlow()
+
+    private val _isBoundState = MutableStateFlow(false)
+    override val isBoundState: StateFlow<Boolean> = _isBoundState.asStateFlow()
     private val listener = TelemetryListener { data ->
         _telemetryData.value = data
     }
@@ -33,6 +36,7 @@ class TelemetryRepositoryImpl @Inject constructor(
             val binder = service as TelemetryService.LocalBinder
             telemetryService = binder.service
             isBound = true
+            _isBoundState.value = true
             telemetryService?.setTelemetryListener(listener)
         }
 
@@ -40,6 +44,7 @@ class TelemetryRepositoryImpl @Inject constructor(
             telemetryService?.setTelemetryListener(null)
             telemetryService = null
             isBound = false
+            _isBoundState.value = false
         }
     }
 
@@ -58,6 +63,7 @@ class TelemetryRepositoryImpl @Inject constructor(
         if (isBound) {
             context.unbindService(connection)
             isBound = false
+            _isBoundState.value = false
         }
         telemetryService = null
     }

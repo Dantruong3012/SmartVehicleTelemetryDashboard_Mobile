@@ -84,7 +84,7 @@ private fun Header(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Spacer để cân bằng với nút Power bên phải
+
         Spacer(modifier = Modifier.size(42.dp))
 
         Column(

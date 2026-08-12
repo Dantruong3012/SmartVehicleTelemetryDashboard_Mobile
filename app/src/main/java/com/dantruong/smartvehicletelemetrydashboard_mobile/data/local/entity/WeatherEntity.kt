@@ -5,7 +5,7 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "weather")
 data class WeatherEntity(
-    @PrimaryKey val id: Int = 1, // Luôn ép ID = 1 để ghi đè dữ liệu cũ
+    @PrimaryKey val id: Int = 1, 
     val temperature: Double,
     val windSpeed: Double,
     val isDay: Boolean,

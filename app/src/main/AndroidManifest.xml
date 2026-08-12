@@ -32,13 +32,13 @@
             </intent-filter>
         </activity>
 
-        <!-- Đăng ký Service động cơ HVAC -->
+        <!-- Register HVAC Engine Service -->
         <service
             android:name=".framework.services.HvacEngineService"
             android:exported="false"
             android:process=":sensor" />
 
-        <!-- Đăng ký Service Giám sát Telemetry (Foreground) -->
+        <!-- Register Telemetry Monitoring Service (Foreground) -->
         <service
             android:name=".framework.services.TelemetryService"
             android:exported="false"

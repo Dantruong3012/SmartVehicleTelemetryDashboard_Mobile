@@ -38,11 +38,6 @@ fun HvacScreen(
     modifier: Modifier = Modifier,
     viewModel: HvacViewModel = hiltViewModel()
 ) {
-    LaunchedEffect(Unit) {
-        delay(500)
-        viewModel.startHvacService()
-    }
-
     val currentTemp by viewModel.currentTemp.collectAsState()
     val isHvacOn by viewModel.isHvacOn.collectAsState()
 
@@ -78,7 +73,7 @@ fun HvacScreen(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = if (isHvacOn) "AC ECU Connected" else "Đang chờ lệnh ECU",
+                    text = if (isHvacOn) "AC ECU Connected" else "Awaiting ECU Signal",
                     color = if (isHvacOn) SuccessGreen else SecondaryText,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium

@@ -38,11 +38,6 @@ fun TelemetryScreen(
     modifier: Modifier = Modifier,
     viewModel: TelemetryViewModel = hiltViewModel()
 ) {
-    LaunchedEffect(Unit) {
-        delay(300)
-        viewModel.startTelemetryService()
-    }
-
     val telemetryData by viewModel.telemetryData.collectAsState()
     var batteryDepletedHandled by remember { mutableStateOf(false) }
 
@@ -58,10 +53,10 @@ fun TelemetryScreen(
                 batteryDepletedHandled = true
             },
             title = {
-                Text(text = "Xe đã hết pin")
+                Text(text = "Battery Depleted")
             },
             text = {
-                Text(text = "Bạn muốn sạc pin để tiếp tục vận hành không?")
+                Text(text = "Would you like to charge the battery to continue operating?")
             },
             confirmButton = {
                 Button(
@@ -70,7 +65,7 @@ fun TelemetryScreen(
                         viewModel.startBatteryCharging()
                     }
                 ) {
-                    Text(text = "Charging")
+                    Text(text = "Charge Battery")
                 }
             },
             dismissButton = {
@@ -79,17 +74,17 @@ fun TelemetryScreen(
                         batteryDepletedHandled = true
                     }
                 ) {
-                    Text(text = "Không sạc pin")
+                    Text(text = "Cancel")
                 }
             }
         )
     }
 
     val alertMessage = when {
-        telemetryData.batteryLevel == 0 -> "Cảnh báo: Xe hết pin, động cơ đã dừng"
-        telemetryData.batteryLevel <= 10 -> "Cảnh báo: Xe sắp hết pin"
-        telemetryData.engineTemperature > 100 -> "Cảnh báo: Nhiệt độ động cơ quá cao"
-        else -> "Không có cảnh báo khẩn cấp"
+        telemetryData.batteryLevel == 0 -> "Warning: Battery depleted, engine stopped"
+        telemetryData.batteryLevel <= 10 -> "Warning: Low battery level"
+        telemetryData.engineTemperature > 100 -> "Warning: High engine temperature"
+        else -> "No active alerts"
     }
     val alertColor = if (telemetryData.batteryLevel <= 10 || telemetryData.engineTemperature > 100) {
         DangerRed
@@ -118,7 +113,7 @@ fun TelemetryScreen(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = "Đang kết nối xe...",
+                text = "Vehicle Connected",
                 color = PrimaryText,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold
@@ -140,7 +135,7 @@ fun TelemetryScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             TelemetryWidget(
-                title = "TỐC ĐỘ",
+                title = "SPEED",
                 value = "${telemetryData.speed} km/h",
                 icon = Icons.Rounded.Speed,
                 color = SuccessGreen,
@@ -148,7 +143,7 @@ fun TelemetryScreen(
             )
 
             TelemetryWidget(
-                title = "PIN",
+                title = "BATTERY",
                 value = "${telemetryData.batteryLevel}%",
                 icon = Icons.Rounded.BatteryFull,
                 color = if (telemetryData.batteryLevel > 20) AccentBlue else DangerRed,
@@ -156,7 +151,7 @@ fun TelemetryScreen(
             )
 
             TelemetryWidget(
-                title = "ĐỘNG CƠ",
+                title = "ENGINE TEMP",
                 value = "${telemetryData.engineTemperature}°C",
                 icon = Icons.Rounded.DeviceThermostat,
                 color = if (telemetryData.engineTemperature > 100) DangerRed else WarningYellow,
